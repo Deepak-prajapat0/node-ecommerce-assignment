@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
-const userModel = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   email: {
     type: String,
     minLength: 12,
@@ -13,10 +18,18 @@ const userModel = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  token:{
+  emailToken:{
     type:String,
-    default:null
-  }
-});
+    default:""
+  },
+  emailTokenExp:{
+    type:Date,
+    default:new Date()
+  },
+  token: {
+    type: String,
+    default: "",
+  },
+},{timestamps:true});
 
-module.exports = mongoose.model("User", userModel);
+module.exports = mongoose.model("User", userSchema);

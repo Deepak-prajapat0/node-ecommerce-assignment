@@ -1,25 +1,32 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer")
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.forwardemail.net",
-  port: 465,
-  secure: true,
-  auth: {
-    // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-    user: 'REPLACE-WITH-YOUR-ALIAS@YOURDOMAIN.COM',
-    pass: 'REPLACE-WITH-YOUR-GENERATED-PASSWORD'
+const otpSender =async(token,name, email)=> {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      service: "gmail",
+      port: process.env.EMAIL_PORT,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    let success = await transporter.sendMail({
+      from: `'Deepak' <process.env.EMAIL_USER>`,
+      to: email,
+      subject: "Verify your email",
+      html: `<h2>Hlo ,${name} </h2>
+                      <h3>Copy this link to update your password</h3>
+                      <br/>
+                      <h3>Link :  http://localhost:3000/updatepassword/${token}</h3>`,
+    });
+    if(success){
+      return res.send(success)
+    }
+  } catch (error) {
+    return error
   }
-});
+};
 
-async function main() {
-  const info = await transporter.sendMail({
-    from: '"Fred Foo 👻" <foo@example.com>', // sender address
-    to: "bar@example.com, baz@example.com", // list of receivers
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    html: "<b>Hello world?</b>", // html body
-  });
-
-
- 
-}
+module.exports = otpSender
