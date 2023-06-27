@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     price:Number,
     rating:String,
     stock:Number
-})
+},{timestamps:true})
 
 module.exports = mongoose.model('Product',productSchema)
 

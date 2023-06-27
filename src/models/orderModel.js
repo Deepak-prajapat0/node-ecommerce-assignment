@@ -82,7 +82,7 @@ const orderSchema = new mongoose.Schema({
     enum:["pending","Delivered","Canceled"],
     default:"pending"
   }
-});
+},{timestamps:true});
 
 
 module.exports = mongoose.model("Order",orderSchema)

@@ -13,6 +13,7 @@ router.post('/login',userController.loginUser)
 router.post('/forgetpassword',userController.forgetPassword)
 router.put('/updatepassword/:emailToken',userController.updatePassword)
 router.post('/logout',auth,userController.logout)
+router.post('/refresh-token',userController.generateNewToken)
 
 // product routes
 router.post('/product',productController.addNewProduct)
@@ -22,4 +23,5 @@ router.post('/cart/add',auth,cartController.addToCart)
 
 // order route
 router.post('/order',auth,orderController.createOrder)
+router.get('/order',auth,orderController.getOrder)
 module.exports = router

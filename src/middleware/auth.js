@@ -20,7 +20,6 @@ const auth = async(req,res,next)=>{
         next()
 
     } catch (error) {
-        // if(TokenExpiredError,JsonWebTokenError)
         return res.status(500).send({error:error.message})
     }
 }

@@ -1,7 +1,6 @@
 const orderModel = require("../models/orderModel");
 const cartModel = require("../models/cartModel")
 const productModel = require("../models/productModel")
-const userModel = require("../models/userModel")
 const orderValidation = require('../validations/orderValidation')
 
 
@@ -15,7 +14,7 @@ const createOrder = async(req,res)=>{
         }
         let cart = await cartModel.findOne({userId:userId}).populate("cartItems.productId","stock")
         if(!cart){
-            return res.status(400).send({status:false,msg:"User cart not found"});
+            return res.status(404).send({status:false,msg:"User cart not found"});
         }
         if(cart.cartItems.length <= 0){
             return res.status(400).send({status:false,msg:"Please add some items in cart to place order"});
@@ -25,24 +24,23 @@ const createOrder = async(req,res)=>{
             return res.status(400).send({status:false,msg:"some product are out of stock",filter})
         }
         let order = {
-            userId,
-            orderDetails:{
-                totalItems:cart.totalItems,
-                totalPrice:cart.totalPrice,
-                products:cart.cartItems
+          userId,
+          orderDetails: {
+            totalItems: cart.totalItems,
+            totalPrice: cart.totalPrice,
+            products: cart.cartItems,
+          },
+          shippingDetails: {
+            name,
+            phone,
+            address: {
+              house,
+              street,
+              city,
+              state,
+              pincode,
             },
-            shippingDetails:{
-                name,
-                phone,
-                address:{
-                    house,
-                    street,
-                    city,
-                    state,
-                    pincode
-                }
-            }
-
+          },
         };
         let userOrder =  await orderModel.create(order)
         cart.cartItems.forEach(async(item) => {
@@ -57,4 +55,17 @@ const createOrder = async(req,res)=>{
     }
 }
 
-module.exports = {createOrder}
+const getOrder = async(req,res)=>{
+    try {
+        let userId = req.user._id;
+        let order = await orderModel.findOne({userId}).populate("orderDetails.products.productId");
+        if(!order){
+            return res.status(404).send({status:false,msg:"You didn't place any orders yet"})
+        }
+        return res.status(200).send({status:true,msg:"User order",order})
+    } catch (error) {
+        return res.status(500).send({error:error.message})
+    }
+}
+
+module.exports = {createOrder,getOrder}

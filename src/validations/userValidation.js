@@ -21,6 +21,7 @@ const signupValidation = Joi.object().keys({
     "any.required": `Password is a required field`,
   }),
 });
+
 const loginValidation = Joi.object().keys({
   email: Joi.string()
     .regex(/^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/)
