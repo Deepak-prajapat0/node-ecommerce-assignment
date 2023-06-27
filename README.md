@@ -5,16 +5,26 @@ In this app  user can create its account,do login and add some products into his
 
 
 
-## Installation
+## Run Locally
 
-Install this project with npm
+Clone the project
 
 ```bash
   git clone https://github.com/Deepak-prajapat0/node-ecommerce-assignment.git
-  npm i
-  npm start : to start the project
 ```
-    
+Install dependencies
+
+```bash
+  npm install
+```
+
+Start the server
+
+```bash
+  npm start
+```
+
+
 ## API Reference
 
 ## token will be send in headers "x-api-key"
