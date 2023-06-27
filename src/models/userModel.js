@@ -26,10 +26,10 @@ const userSchema = new mongoose.Schema({
     type:Date,
     default:new Date()
   },
-  token: {
-    type: String,
+  tokens: [{
+    type: Object,
     default: "",
-  },
+  }],
 },{timestamps:true});
 
 module.exports = mongoose.model("User", userSchema);

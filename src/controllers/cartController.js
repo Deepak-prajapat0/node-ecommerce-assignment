@@ -5,17 +5,11 @@ const userModel = require("../models/userModel");
 const addToCart = async(req,res)=>{
     try {
         let productId = req.body.productId;
-        let userId = req.userId;
-        console.log(userId)
+        let userId = req.user._id;
         let validProduct = await productModel.findById(productId);
         if(!validProduct){
             return res.status(400).send({status:false,msg:"product not found with given id"})
         }
-        let user = await userModel.findById(userId);
-        if(!user){
-            return res.status(400).send({status:false,msg:"user not found with given id"})
-        }
-
         let userCart = await cartModel.findOne({userId:userId});
         if(!userCart){
             let items = [{productId,quantity:1}];
@@ -26,11 +20,9 @@ const addToCart = async(req,res)=>{
         else{
             let cart = {};
             let cartItemIndex = userCart.cartItems.findIndex(x=>x.productId==productId)
-            console.log(cartItemIndex,"hlo")
             if(cartItemIndex >=0){
                 let product = userCart.cartItems[cartItemIndex]
                 product.quantity+=1;
-                // userCart.totalItems+=1;
                 userCart.totalPrice+=validProduct.price;
                  let updated = await cartModel.findByIdAndUpdate(userCart._id,userCart,{new:true})
                 return res.status(200).send(updated)
