@@ -54,7 +54,6 @@ Start the server
 ```
 
 
-
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `emailToken`      | `string` | **Required**. parameter to fetch user |
@@ -62,27 +61,45 @@ Start the server
 
 #### Logout user
 ```http
-  POST /logout      required (token)
+  POST /logout        required (token)
+```
+
+#### refresh token 
+```http
+  POST /refresh-token  required (refershToken in body)
 ```
 
 ### cart Routes
 
 #### Add item into cart 
 ```http
-  POST /cart/add    required (token)
+  POST /cart/add       required (token)
+```
+#### Get user cart 
+```http
+  GET /cart            required (token)
 ```
 
 ### order Routes
 
 #### Create a order
 ```http
-  POST /order       required (token)
+  POST /order           required (token)
 ```
 
 #### get user order
 ```http
-  GET /order        required (token)
+  GET /order            required (token)
 ```
+
+#### cancel one product in order
+```http
+  PUT /order/:orderId    required (token)
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `orderId`      | `string` | **Required**. parameter to fetch user order with orderId |
 
 
 

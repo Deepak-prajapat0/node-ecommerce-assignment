@@ -11,12 +11,12 @@ const refreshToken =(id)=>{
 const verifyRefreshToken =(token)=>{
     try {
         if(!token){
-            return res.status(400).send({status:false,msg:"Please provide refresh Token in body"})
+            return false
         }
         let decodedRefreshToken= jwt.verify(token,process.env.JWT_REFRESH_KEY)        
         return decodedRefreshToken
     } catch (error) {
-        return res.status(400).send({status:false,error:error.message})
+        return false
     }
 } 
 

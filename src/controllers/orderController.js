@@ -2,6 +2,7 @@ const orderModel = require("../models/orderModel");
 const cartModel = require("../models/cartModel")
 const productModel = require("../models/productModel")
 const orderValidation = require('../validations/orderValidation')
+const ObjectId = require("mongoose").Types.ObjectId
 
 
 const createOrder = async(req,res)=>{
@@ -58,9 +59,9 @@ const createOrder = async(req,res)=>{
 const getOrder = async(req,res)=>{
     try {
         let userId = req.user._id;
-        let order = await orderModel.findOne({userId}).populate("orderDetails.products.productId");
+        let order = await orderModel.findOne({userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId");
         if(!order){
-            return res.status(404).send({status:false,msg:"You didn't place any orders yet"})
+            return res.status(404).send({status:false,msg:"You have not completed any order"})
         }
         return res.status(200).send({status:true,msg:"User order",order})
     } catch (error) {
@@ -68,4 +69,78 @@ const getOrder = async(req,res)=>{
     }
 }
 
-module.exports = {createOrder,getOrder}
+const cancelProductInOrder = async(req,res)=>{
+    try {
+        let {productId} = req.body;
+        let orderId = req.params.orderId;
+        let userId = req.user._id
+        if(!orderId){
+            return res.status(400).send({status:false,msg:"Please provide orderId"})
+        }
+        if (!ObjectId.isValid(orderId)) {
+            return res.status(400).send({status:false,msg:"invlid orderId"})
+        }
+        if(!productId){
+            return res.status(400).send({status:false,msg:"Please provide productId"})
+        }
+        if (!ObjectId.isValid(productId)) {
+            return res.status(400).send({status:false,msg:"invlid productId"})
+        }
+        let userOrder = await orderModel.findById(orderId);
+        if(!userOrder){
+        return res.status(404).send({status:false,msg:"order not found with this id"})
+        }
+
+        if(userId.valueOf() != userOrder.userId.valueOf()){
+            return res.status(403).send({status:false,msg:"Forbidden you have not access to update this"})
+        }
+        if(userOrder.status !== "pending"){
+            return res.status(400).send({status:false,msg:"Order cannot be updated"})
+        }
+        let product = await productModel.findById(productId);
+        if(!product){
+            return res.status(404).send({status:false,msg:"productId invalid"})
+        }
+        if(userOrder.orderDetails.products.length===0){
+            return res.status(400).send({status:false,msg:"your order is already empty"})
+        }
+        // get quantity of removed product
+        let quantity =0 
+        userOrder.orderDetails.products.map((x)=> {
+            if(x.productId.valueOf() === productId){
+                quantity = x.quantity
+            }
+        })
+        const filteredProducts = userOrder.orderDetails.products.filter((x)=>x.productId.valueOf() !== productId)
+
+        if(filteredProducts.length === userOrder.orderDetails.products.length){
+            return res.status(404).send({status:false,msg:"given product not found in your order"})
+        }
+
+        product.stock += quantity
+        await product.save();
+        const updatedData ={}
+
+        // if no products left after filteration
+        if(filteredProducts.length === 0){
+            updatedData.products=filteredProducts,
+            updatedData.totalItems=userOrder.orderDetails.totalItems-1,
+            updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
+            const updatedOrder =await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData,status:"cancled"}},{new:true})
+            return res.status(200).send({status:true,msg:"order cancled",updatedOrder})        
+        }
+     
+        else{
+            updatedData.products=filteredProducts,
+            updatedData.totalItems=userOrder.orderDetails.totalItems-1,
+            updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
+            const updatedOrder = await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData}},{new:true})
+             return res.status(200).send({status:true,msg:"order cancled",updatedOrder})       
+        }
+
+    } catch (error) {
+        return res.status(500).send({error:error.message})
+    }
+}
+
+module.exports = {createOrder,getOrder,cancelProductInOrder}

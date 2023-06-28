@@ -20,8 +20,11 @@ router.post('/product',productController.addNewProduct)
 
 // cart route
 router.post('/cart/add',auth,cartController.addToCart)
+router.get('/cart',auth,cartController.getUserCart)
 
 // order route
 router.post('/order',auth,orderController.createOrder)
 router.get('/order',auth,orderController.getOrder)
+router.get('/order',auth,orderController.getOrder)
+router.put('/order/:orderId',auth,orderController.cancelProductInOrder)
 module.exports = router

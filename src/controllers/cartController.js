@@ -7,7 +7,10 @@ const addToCart = async(req,res)=>{
         let userId = req.user._id;
         let validProduct = await productModel.findById(productId);
         if(!validProduct){
-            return res.status(400).send({status:false,msg:"product not found with given id"})
+            return res.status(404).send({status:false,msg:"product not found with given id"})
+        }
+        if(validProduct.stock === 0){
+            return res.status(400).send({status:false,msg:"item is not currenty available"})
         }
         let userCart = await cartModel.findOne({userId:userId});
         if(!userCart){
@@ -18,6 +21,8 @@ const addToCart = async(req,res)=>{
         }
         else{
             let cartItemIndex = userCart.cartItems.findIndex(x=>x.productId==productId)
+
+            // if user added same product in cart
             if(cartItemIndex >=0){
                 let product = userCart.cartItems[cartItemIndex]
                 product.quantity+=1;
@@ -25,21 +30,29 @@ const addToCart = async(req,res)=>{
                  let updatedCart = await cartModel.findByIdAndUpdate(userCart._id,userCart,{new:true})
                 return res.status(200).send({status:true,msg:"Item added to cart",cart:updatedCart})
             }
+             // if user added different product in cart
             else{
                 let cart = {};
                 cart.cartItems = userCart.cartItems;
                 cart.cartItems.push({productId,quantity:1})
                 cart.totalItems = userCart.cartItems.length;
                 cart.totalPrice = userCart.totalPrice+validProduct.price
-                let updatedCart= await cartModel.findByIdAndUpdate(userCart._id,cart,{new:true})
+                let updatedCart= await cartModel.findByIdAndUpdate(userCart._id , cart ,{new:true})
                 return res.status(200).send({status:true,msg:"Item added to cart",cart:updatedCart})
             }
-        }
-
-        
+        }        
     } catch (error) {
         return res.status(500).send({status:false,error:error.message})
     }
 }
 
-module.exports ={addToCart}
+const getUserCart = async(req,res)=>{
+    try {
+        let userId = req.user._id;
+        const userCart = await cartModel.findOne({userId}).populate("cartItems.productId");
+        return res.status(200).send({status:true,msg:"User cart",cart:userCart})
+    } catch (error) {
+        return res.status(500).send({status:false,error:error.message})
+    }
+}
+module.exports ={addToCart,getUserCart}

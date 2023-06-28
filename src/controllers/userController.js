@@ -1,6 +1,5 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const {signupValidation,loginValidation} = require("../validations/userValidation");
 const otpSender = require("../utils/nodemailer");
 const crypto =  require("node:crypto");
@@ -20,12 +19,16 @@ const registerUser =async(req,res)=>{
         }
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password,salt);
+        // createing user
         const user = await userModel.create({name,email,password});
-        const token = jwtToken(user._id)
+
+        // generating token and refreshToken
+        const token = jwtToken(user._id);
+        const refreshJwtToken =  refreshToken(user._id)
         user.tokens = [{token,validUpto:new Date(Date.now() + (5 * 60 * 1000))}];
         user.save();
         res.header('x-api-key',token)
-        return res.status(201).send({status:true,msg:"Account created successfully",user})
+        return res.status(201).send({status:true,msg:"Account created successfully",user,refreshJwtToken})
 
     } catch (error) {
         return res.status(500).send({error:error.message})
@@ -41,15 +44,18 @@ const loginUser = async(req,res)=>{
         }
         const user = await userModel.findOne({email});
         if(!user){
-            return res.status(400).send({status:false,msg:"User not found with this email"})
+            return res.status(404).send({status:false,msg:"User not found with this email"})
         }
         let decyptPass = await bcrypt.compare(password,user.password)
         if(!decyptPass){
             return res.status(401).send({status:false,msg:"Invalid password"})
         }
+        // generating token and refreshToken
         const token =  jwtToken(user._id)
         const refreshJwtToken =  refreshToken(user._id)
         res.header("x-api-key",token)
+
+        // getting all tokens of user
         let oldTokens = user.tokens || []
         if(oldTokens.length){
             oldTokens= oldTokens.filter(t=> t.validUpto > new Date())
@@ -77,6 +83,7 @@ const forgetPassword = async(req,res)=>{
             return res.status(400).send({status:false,msg:"User not found with this email"})
         }
         const emailToken = crypto.randomBytes(15).toString('hex');
+        // sending token on email
         let emailSendWithToken =  otpSender(emailToken,user.name,email)
         if(!emailSendWithToken){
             return res.status(400).send({status:false,msg:"something wrong please try later"})
@@ -102,7 +109,7 @@ const updatePassword = async(req,res)=>{
         let userEmailToken = await userModel.findOne({emailToken:emailToken});
         if(!userEmailToken){
                 return res.status(401).send({status:false,msg:"invalid link"})
-            }
+        }
         // check if link is expired or not
         if(userEmailToken.emailTokenExp < new Date()){
             return res.status(401).send({status:false,msg:"link is expired ,Please create a new one"})
@@ -129,13 +136,13 @@ const updatePassword = async(req,res)=>{
 
 const logout = async(req,res)=>{
     try {
-            const userId = req.user._id;
-            const token = req.headers['x-api-key'];
-            // retrieving previous generated tokens
-            const tokens = req.user.tokens;
-            const newTokens = tokens.filter(t =>t.token !==token) 
-            await userModel.findByIdAndUpdate(userId,{tokens:newTokens},{new:true})    
-            return res.status(204).send({status:true,msg:"Logout successfully"})    
+        const userId = req.user._id;
+        const token = req.headers['x-api-key'];
+        // retrieving previous generated tokens
+        const tokens = req.user.tokens;
+        const newTokens = tokens.filter(t =>t.token !==token) 
+        await userModel.findByIdAndUpdate(userId,{tokens:newTokens},{new:true})    
+        return res.status(204).send({status:true,msg:"Logout successfully"})    
     } catch (error) {
         return res.status(500).send({error:error.message})
     }
