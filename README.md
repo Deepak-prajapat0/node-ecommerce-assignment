@@ -79,6 +79,10 @@ Start the server
 ```http
   GET /cart            required (token)
 ```
+#### update User Cart products
+```http
+  PUT /cart            required (token)
+```
 
 ### order Routes
 
@@ -95,6 +99,16 @@ Start the server
 #### cancel one product in order
 ```http
   PUT /order/:orderId    required (token)
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `orderId`      | `string` | **Required**. parameter to fetch user order with orderId |
+
+
+#### cancel order 
+```http
+  PUT /order/cancel/:orderId    required (token)
 ```
 
 | Parameter | Type     | Description                       |

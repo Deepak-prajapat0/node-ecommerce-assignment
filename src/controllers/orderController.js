@@ -126,8 +126,8 @@ const cancelProductInOrder = async(req,res)=>{
             updatedData.products=filteredProducts,
             updatedData.totalItems=userOrder.orderDetails.totalItems-1,
             updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
-            const updatedOrder =await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData,status:"cancled"}},{new:true})
-            return res.status(200).send({status:true,msg:"order cancled",updatedOrder})        
+            await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData,status:"cancled"}},{new:true})
+            return res.status(204).send({status:true,msg:"order cancled"})        
         }
      
         else{
@@ -135,7 +135,7 @@ const cancelProductInOrder = async(req,res)=>{
             updatedData.totalItems=userOrder.orderDetails.totalItems-1,
             updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
             const updatedOrder = await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData}},{new:true})
-             return res.status(200).send({status:true,msg:"order cancled",updatedOrder})       
+             return res.status(200).send({status:true,msg:"product cancled",updatedOrder})       
         }
 
     } catch (error) {
@@ -143,4 +143,32 @@ const cancelProductInOrder = async(req,res)=>{
     }
 }
 
-module.exports = {createOrder,getOrder,cancelProductInOrder}
+const cancelOrder = async(req,res)=>{
+    try {
+        let orderId = req.params.orderId;
+        let userId = req.user._id;
+        if(!orderId){
+            return res.status(400).send({status:false,msg:"Please provide orderId"})
+        }
+        if (!ObjectId.isValid(orderId)) {
+            return res.status(400).send({status:false,msg:"invlid orderId"})
+        }
+        let userOrder = await orderModel.findById(orderId);
+
+        if(userId.valueOf() != userOrder.userId.valueOf()){
+            return res.status(403).send({status:false,msg:"Forbidden you have not access to update this"})
+        }
+        if(userOrder.status !== "pending"){
+            return res.status(400).send({status:false,msg:"Order cannot be cancel"})
+        }
+        userOrder.orderDetails.products.forEach(async(product)=>{
+            await productModel.findByIdAndUpdate(product.productId,{$inc:{stock:+product.quantity}},{new:true})
+        })
+        await orderModel.findByIdAndUpdate(orderId,{$set:{status:"cancled"}},{new:true})
+        return res.status(204).send({status:true,msg:"order cancled"})      
+    } catch (error) {
+        return res.status(500).send({error:error.message})
+    }
+}
+
+module.exports = {createOrder,getOrder,cancelProductInOrder,cancelOrder}

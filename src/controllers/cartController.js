@@ -55,4 +55,52 @@ const getUserCart = async(req,res)=>{
         return res.status(500).send({status:false,error:error.message})
     }
 }
-module.exports ={addToCart,getUserCart}
+
+const updateCart = async(req,res)=>{
+    try {
+        let userId = req.user._id;
+        if(Object.keys(req.body).length !== 2){
+            return res.status(400).send({status:false,msg:"invlid request"})
+        }
+        let{productId,quantity}= req.body;
+        if(!productId){
+            return res.status(400).send({status:false,msg:"please provide productId"})
+        }
+        if(!quantity){
+            return res.status(400).send({status:false,msg:"please provide quantity"})
+        }
+        let product = await productModel.findById(productId);
+        if(!product){
+            return res.status(404).send({status:false,msg:"product not found with given Id"})
+        }
+        if(quantity > product.stock){
+            return res.status(404).send({status:false,msg:`maximum quantiy to buy is ${product.stock}`})
+        }
+        let  userCart = await cartModel.findOne({userId});
+        
+        let item= userCart.cartItems.findIndex(item=> item.productId == productId)
+        if(item === -1){
+            return res.status(404).send({status:false,msg:"This product not found in your cart"})
+        }
+        let updatedCart ={};
+        const cartItem = userCart.cartItems[item]
+        if(quantity<1){
+            let totalItems = userCart.totalItems-1
+            let totalPrice = userCart.totalPrice - (cartItem.quantity * product.price)
+            let cart =await cartModel.findByIdAndUpdate(userCart._id,{$pull:{cartItems:{productId:productId}},$set:{totalItems,totalPrice}},{new:true})
+            return res.status(200).send({status:true,msg:"cart updated",cart:cart})
+        }
+            else{
+                updatedCart.cartItems = userCart.cartItems;
+                updatedCart.totalItems = userCart.totalItems;
+                updatedCart.totalPrice = userCart.totalPrice + (quantity*product.price-cartItem.quantity*product.price);
+                cartItem.quantity = quantity;
+            let cart = await cartModel.findByIdAndUpdate(userCart._id,updatedCart,{new:true})
+            return res.status(200).send({status:true,msg:"cart updated",cart:cart})
+        }
+        
+    } catch (error) {
+        return res.status(500).send({status:false,error:error.message})
+    }
+}
+module.exports ={addToCart,getUserCart,updateCart}
