@@ -2,7 +2,7 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const {signupValidation,loginValidation} = require("../validations/userValidation");
 const otpSender = require("../utils/nodemailer");
-const crypto =  require("node:crypto");
+const crypto =  require("crypto");
 const {jwtToken,refreshToken,verifyRefreshToken} = require("../utils/token");
 
 
