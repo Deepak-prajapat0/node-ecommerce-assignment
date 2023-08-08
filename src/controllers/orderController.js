@@ -59,11 +59,25 @@ const createOrder = async(req,res)=>{
 const getOrder = async(req,res)=>{
     try {
         let userId = req.user._id;
-        let order = await orderModel.findOne({userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId");
+        let order = await orderModel.find({userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId");
+        // if(!order){
+        //     return res.status(404).send({status:false,msg:"You have not completed any order"})
+        // }
+        return res.status(200).send({status:true,msg:"User order",order})
+    } catch (error) {
+        return res.status(500).send({error:error.message})
+    }
+}
+
+const getOrderById = async(req,res)=>{
+    try {
+        let userId = req.user._id;
+        let orderId = req.params.orderId;
+        let order = await orderModel.findOne({_id:orderId,userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId");
         if(!order){
             return res.status(404).send({status:false,msg:"You have not completed any order"})
         }
-        return res.status(200).send({status:true,msg:"User order",order})
+        return res.status(200).send({status:true,msg:"Order details",order})
     } catch (error) {
         return res.status(500).send({error:error.message})
     }
@@ -124,18 +138,30 @@ const cancelProductInOrder = async(req,res)=>{
         // if no products left after filteration
         if(filteredProducts.length === 0){
             updatedData.products=filteredProducts,
-            updatedData.totalItems=userOrder.orderDetails.totalItems-1,
+            updatedData.totalItems=userOrder.orderDetails.totalItems-quantity,
             updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
-            await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData,status:"cancled"}},{new:true})
-            return res.status(204).send({status:true,msg:"order cancled"})        
+            let order = await orderModel.findByIdAndUpdate(
+              orderId,
+              { $set: { orderDetails: updatedData, status: "canceled" } },
+              { new: true }
+            );
+            return res.status(200).send({status:true,msg:"order cancled",order})        
         }
      
         else{
             updatedData.products=filteredProducts,
-            updatedData.totalItems=userOrder.orderDetails.totalItems-1,
+            updatedData.totalItems=userOrder.orderDetails.totalItems-quantity,
             updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
-            const updatedOrder = await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData}},{new:true})
-             return res.status(200).send({status:true,msg:"product cancled",updatedOrder})       
+             userOrder.orderDetails.products.forEach(async (product) => {
+              let pro = await productModel.findByIdAndUpdate(
+                 product._id,
+                 { $inc: { stock: +product.quantity } },
+                 { new: true }
+               );
+               console.log(pro);
+             });
+            const order = await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData}},{new:true}).populate("orderDetails.products.productId")
+             return res.status(200).send({status:true,msg:"product cancled",order})       
         }
 
     } catch (error) {
@@ -164,11 +190,17 @@ const cancelOrder = async(req,res)=>{
         userOrder.orderDetails.products.forEach(async(product)=>{
             await productModel.findByIdAndUpdate(product.productId,{$inc:{stock:+product.quantity}},{new:true})
         })
-        await orderModel.findByIdAndUpdate(orderId,{$set:{status:"cancled"}},{new:true})
-        return res.status(204).send({status:true,msg:"order cancled"})      
+        const order = await orderModel.findByIdAndUpdate(orderId,{$set:{status:"canceled"}},{new:true})
+        return res.status(200).send({status:true,msg:"order cancled",order})      
     } catch (error) {
         return res.status(500).send({error:error.message})
     }
 }
 
-module.exports = {createOrder,getOrder,cancelProductInOrder,cancelOrder}
+module.exports = {
+  createOrder,
+  getOrder,
+  getOrderById,
+  cancelProductInOrder,
+  cancelOrder,
+};

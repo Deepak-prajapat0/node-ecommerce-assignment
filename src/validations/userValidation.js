@@ -3,7 +3,6 @@ const Joi = require("joi");
 const signupValidation = Joi.object().keys({
   name:Joi.string().min(3).max(20).required(),
   email: Joi.string()
-    .regex(/^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/)
     .required()
     .email()
     .min(12)
@@ -24,7 +23,6 @@ const signupValidation = Joi.object().keys({
 
 const loginValidation = Joi.object().keys({
   email: Joi.string()
-    .regex(/^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/)
     .required()
     .email()
     .min(12)

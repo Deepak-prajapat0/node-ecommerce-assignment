@@ -1,11 +1,11 @@
 const jwt = require("jsonwebtoken");
 
 const jwtToken = (id)=>{
-    return jwt.sign({_id:id},process.env.JWT_PRIVATE_KEY,{expiresIn:"15m"}) 
+    return jwt.sign({_id:id},process.env.JWT_PRIVATE_KEY,{expiresIn:"30m"}) 
 }
 
 const refreshToken =(id)=>{
- return jwt.sign({_id:id},process.env.JWT_REFRESH_KEY,{expiresIn:"30m"})
+ return jwt.sign({_id:id},process.env.JWT_PRIVATE_KEY,{expiresIn:"60m"})
 } 
 
 const verifyRefreshToken =(token)=>{
@@ -13,7 +13,7 @@ const verifyRefreshToken =(token)=>{
         if(!token){
             return false
         }
-        let decodedRefreshToken= jwt.verify(token,process.env.JWT_REFRESH_KEY)        
+        let decodedRefreshToken= jwt.verify(token,process.env.JWT_PRIVATE_KEY)        
         return decodedRefreshToken
     } catch (error) {
         return false

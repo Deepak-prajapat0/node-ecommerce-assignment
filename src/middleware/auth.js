@@ -7,15 +7,11 @@ const auth = async(req,res,next)=>{
         if (!token){
             return res.status(401).send({ status: false, msg: "Token is not present" })
         }
-        let decodedToken = jwt.verify(token,process.env.JWT_PRIVATE_KEY);
+        let decodedToken = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
         let user = await userModel.findById(decodedToken._id);
         if(!user){
             return res.status(401).send({ status: false, msg: "unauthorized Access" })
         }
-        // const invalidToken = user.tokens.filter(x=>x.token === token)
-        // if(!invalidToken.length){
-        //     return res.status(403).send({status:false,msg:"invalid Access"})
-        // }
         req.user = user;
         next()
 

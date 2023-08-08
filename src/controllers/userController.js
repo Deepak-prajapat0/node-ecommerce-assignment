@@ -6,6 +6,7 @@ const crypto =  require("crypto");
 const {jwtToken,refreshToken,verifyRefreshToken} = require("../utils/token");
 
 
+
 const registerUser =async(req,res)=>{
     try {
         let {name,email,password} = req.body;
@@ -84,14 +85,20 @@ const forgetPassword = async(req,res)=>{
         }
         const emailToken = crypto.randomBytes(15).toString('hex');
         // sending token on email
-        let emailSendWithToken =  otpSender(emailToken,user.name,email)
+        let emailSendWithToken =  await otpSender(emailToken,user.name,email)
+        console.log(emailSendWithToken);
         if(!emailSendWithToken){
             return res.status(400).send({status:false,msg:"something wrong please try later"})
         }
         user.emailToken = emailToken
         user.emailTokenExp = new Date(Date.now() + (5 * 60 * 1000))
         user.save();
-        return res.status(204).send({status:true,msg:"Otp has been sent to your email"})
+        return res
+          .status(200)
+          .send({
+            status: true,
+            msg: `If an account exists for ${email} , you will get an link to resetting your password. `,
+          });
             
     } catch (error) {
         return res.status(500).send({error:error.message})
@@ -108,7 +115,7 @@ const updatePassword = async(req,res)=>{
         //token validation
         let userEmailToken = await userModel.findOne({emailToken:emailToken});
         if(!userEmailToken){
-                return res.status(401).send({status:false,msg:"invalid link"})
+                return res.status(401).send({status:false,msg:"link expired,create a new link"})
         }
         // check if link is expired or not
         if(userEmailToken.emailTokenExp < new Date()){
@@ -127,7 +134,7 @@ const updatePassword = async(req,res)=>{
 
         // updating password and reseting the token
         await userModel.findOneAndUpdate({_id:userEmailToken._id},{$set:{password:password,emailToken:"",emailTokenExp:0}},{new:true})
-        return res.status(204).send({status:true,msg:"Your password updated Successfully"})
+        return res.status(200).send({status:true,msg:"Your password updated Successfully"})
             
     } catch (error) {
         return res.status(500).send({error:error.message})
