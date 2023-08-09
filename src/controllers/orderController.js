@@ -59,10 +59,7 @@ const createOrder = async(req,res)=>{
 const getOrder = async(req,res)=>{
     try {
         let userId = req.user._id;
-        let order = await orderModel.find({userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId");
-        // if(!order){
-        //     return res.status(404).send({status:false,msg:"You have not completed any order"})
-        // }
+        let order = await orderModel.find({userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId").sort({"createdAt": -1});
         return res.status(200).send({status:true,msg:"User order",order})
     } catch (error) {
         return res.status(500).send({error:error.message})

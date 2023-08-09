@@ -1,4 +1,7 @@
+const { default: mongoose } = require("mongoose");
 const productModel = require("../models/productModel");
+const objectId = mongoose.Types.ObjectId
+
 
 const addNewProduct =async(req,res)=>{
     try {
@@ -30,8 +33,8 @@ const getLimitedProducts =async(req,res)=>{
 }
 const getProductById =async(req,res)=>{
     try {
-        let id = req.params.id
-        let product = await productModel.findById(id);
+        let title = req.params.title
+        let product = await productModel.findOne({title});
         return res.status(200).send({status:true,product})
         
     } catch (error) {
@@ -42,6 +45,7 @@ const getProductById =async(req,res)=>{
 module.exports = {
   addNewProduct,
   getAllProducts,
+  getFilteredProducts,
   getLimitedProducts,
   getProductById,
 };

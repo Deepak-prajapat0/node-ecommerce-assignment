@@ -4,7 +4,6 @@ const signupValidation = Joi.object().keys({
   name:Joi.string().min(3).max(20).required(),
   email: Joi.string()
     .required()
-    .email()
     .min(12)
     .messages({
       "string.base": `Only characters are allowed`,
@@ -24,7 +23,6 @@ const signupValidation = Joi.object().keys({
 const loginValidation = Joi.object().keys({
   email: Joi.string()
     .required()
-    .email()
     .min(12)
     .messages({
       "string.base": `Only characters are allowed`,

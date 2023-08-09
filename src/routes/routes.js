@@ -16,7 +16,7 @@ router.post("/refresh-token", userController.generateNewToken);
 
 // product routes
 router.post("/product", productController.addNewProduct);
-router.get("/products/:id", productController.getProductById);
+router.get("/products/:title", productController.getProductById);
 router.get("/products", productController.getAllProducts);
 router.get("/best-products", productController.getLimitedProducts);
 
@@ -31,5 +31,7 @@ router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", auth, orderController.getOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
 router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
+
+
 
 module.exports = router;

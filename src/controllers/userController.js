@@ -12,7 +12,7 @@ const registerUser =async(req,res)=>{
         let {name,email,password} = req.body;
         const inputError = signupValidation.validate({name,email,password});
         if(inputError.error){
-            return res.status(400).send({error:inputError.error.details[0].message});
+            return res.status(400).send({msg:inputError.error.details[0].message});
         }
         const existingUser = await userModel.findOne({email});
         if(existingUser){
@@ -41,7 +41,7 @@ const loginUser = async(req,res)=>{
         let {email,password}= req.body;
         const inputError = loginValidation.validate({email,password});
         if(inputError.error){
-            return res.status(400).send({error:inputError.error.details[0].message});
+            return res.status(400).send({msg:inputError.error.details[0].message});
         }
         const user = await userModel.findOne({email});
         if(!user){

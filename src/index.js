@@ -11,6 +11,8 @@ app.use(cors({origin: "*"}));
 app.use("/",routes);
 
 
+
+
 mongoose
   .connect(
     "mongodb+srv://deepakprajapat:ggev3skeK6tIIJhE@cluster0.7bnz8zu.mongodb.net/angular-ecommerce"
