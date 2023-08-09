@@ -86,7 +86,6 @@ const forgetPassword = async(req,res)=>{
         const emailToken = crypto.randomBytes(15).toString('hex');
         // sending token on email
         let emailSendWithToken =  await otpSender(emailToken,user.name,email)
-        console.log(emailSendWithToken);
         if(!emailSendWithToken){
             return res.status(400).send({status:false,msg:"something wrong please try later"})
         }

@@ -17,8 +17,9 @@ const otpSender =async(token,name, email)=> {
       from: `'Deepak' <process.env.EMAIL_USER>`,
       to: email,
       subject: "Verify your email",
-      html: `<h2>Hlo ,${name} </h2>
-                      <h3>Copy this link to update your password</h3>
+      html: `<h2>Hlo ${name} </h2>
+                      <h3>Click this link to update your password</h3>
+                      <h6>This link is valid for 5 minutes</h6>
                       <br/>
                       <h3>Link :  ${process.env.HOST_URL}/updatepassword/${token}</h3>`,
     });
