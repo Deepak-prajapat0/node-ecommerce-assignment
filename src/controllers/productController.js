@@ -45,7 +45,6 @@ const getProductById =async(req,res)=>{
 module.exports = {
   addNewProduct,
   getAllProducts,
-  getFilteredProducts,
   getLimitedProducts,
   getProductById,
 };
