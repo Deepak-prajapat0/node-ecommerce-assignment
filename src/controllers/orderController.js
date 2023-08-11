@@ -194,7 +194,34 @@ const cancelOrder = async(req,res)=>{
     }
 }
 
+
+const stripe = require("stripe")(
+  "sk_test_51NdRM1SGor658vyKhU4S6rmJ3uwQ65oFrPHmpnCXZCDM8MAdcUA1ELMxHmnSA5j5dBYdsnOlkubMxTAAvqagiaLK00E4koTCFJ"
+);
+
+const calculateOrderAmount = (items) => {
+  return 1400;
+};
+
+const payment = async (req, res) => {
+  const { items } = req.body;
+
+  // Create a PaymentIntent with the order amount and currency
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: calculateOrderAmount(items),
+    currency: "inr",
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+ return  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+}
+
 module.exports = {
+    payment,
   createOrder,
   getOrder,
   getOrderById,

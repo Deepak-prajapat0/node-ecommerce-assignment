@@ -23,10 +23,12 @@ router.get("/best-products", productController.getLimitedProducts);
 // cart route
 router.post("/cart", auth, cartController.addToCart);
 router.get("/cart", auth, cartController.getUserCart);
+router.put("/cart-local", cartController.addToCartFromLocalStorage);
 router.put("/cart", auth, cartController.updateCart);
 
 // order route
 router.post("/order", auth, orderController.createOrder);
+router.post("/create-payment-intent", orderController.payment);
 router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", auth, orderController.getOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);

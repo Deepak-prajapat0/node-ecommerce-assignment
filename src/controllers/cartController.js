@@ -1,5 +1,6 @@
 const cartModel = require("../models/cartModel");
 const productModel = require("../models/productModel");
+const { getUserId } = require("./userController");
 
 const addToCart = async(req,res)=>{
     try {
@@ -41,6 +42,68 @@ const addToCart = async(req,res)=>{
                 let updatedCart= await cartModel.findByIdAndUpdate(userCart._id , cart ,{new:true})
                 return res.status(200).send({status:true,msg:"Item added to cart",cart:updatedCart})
             }
+        }        
+    } catch (error) {
+        return res.status(500).send({status:false,error:error.message})
+    }
+}
+
+
+// {
+//   cartItems: [ { productId: [Object], quantity: 2 } ],
+//   totalItems: 2,
+//   totalPrice: 24
+// }
+
+const addToCartFromLocalStorage = async(req,res)=>{
+   try {
+    let userId = getUserId()
+        let {cartItems} = req.body;
+        let userCart = await cartModel.findOne({userId}).populate('cartItems.productId');
+        if(!userCart){
+            let cartDetails ={ userId,cartItems:cartItems,totalPrice,totalItems}
+            let newCart = await cartModel.create(cartDetails);
+            return res.status(201).send({status:true,msg:"Items added to cart",cart:newCart})
+        }
+        else{
+           
+               let totalItems=0
+                let totalPrice=0
+            
+            userCart.cartItems.forEach(x=>{
+                let id = x.productId._id.toString()
+                cartItems.map(y=>{
+                    if(y.productId._id === id){
+                        x.quantity+= y.quantity
+                    }
+                })
+                // tItems = x.quantity
+            })
+
+            cartItems.forEach((secondItem) => {
+              const existingItem = userCart.cartItems.find(
+                (item) =>
+                  item.productId._id.toString() ===
+                  secondItem.productId._id.toString()
+              );
+
+              if (!existingItem) {
+                userCart.cartItems.push(secondItem);
+              }
+            });
+
+            userCart.cartItems.forEach(x=>{
+            totalItems += x.quantity;
+            totalPrice += x.quantity * x.productId.price
+            })
+
+            userCart.cartItems = userCart.cartItems
+            userCart.totalPrice = totalPrice;
+            userCart.totalItems = totalItems;
+            userCart.save()
+
+            return res.status(200).send({ cart: userCart });
+
         }        
     } catch (error) {
         return res.status(500).send({status:false,error:error.message})
@@ -110,4 +173,9 @@ const updateCart = async(req,res)=>{
         return res.status(500).send({status:false,error:error.message})
     }
 }
-module.exports ={addToCart,getUserCart,updateCart}
+module.exports = {
+  addToCart,
+  addToCartFromLocalStorage,
+  getUserCart,
+  updateCart,
+};

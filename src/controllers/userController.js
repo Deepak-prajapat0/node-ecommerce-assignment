@@ -5,6 +5,10 @@ const otpSender = require("../utils/nodemailer");
 const crypto =  require("crypto");
 const {jwtToken,refreshToken,verifyRefreshToken} = require("../utils/token");
 
+let userIdFromLocal;
+const getUserId=()=>{
+    return userIdFromLocal;
+}
 
 
 const registerUser =async(req,res)=>{
@@ -28,8 +32,9 @@ const registerUser =async(req,res)=>{
         const refreshJwtToken =  refreshToken(user._id)
         user.tokens = [{token,validUpto:new Date(Date.now() + (5 * 60 * 1000))}];
         user.save();
+        userIdFromLocal = user._id
         res.header('x-api-key',token)
-        return res.status(201).send({status:true,msg:"Account created successfully",user,refreshJwtToken})
+        return res.status(201).send({status:true,msg:"Account created successfully",user,token})
 
     } catch (error) {
         return res.status(500).send({error:error.message})
@@ -61,7 +66,7 @@ const loginUser = async(req,res)=>{
         if(oldTokens.length){
             oldTokens= oldTokens.filter(t=> t.validUpto > new Date())
         }
-        
+        userIdFromLocal = user._id;
         await userModel.findByIdAndUpdate(user._id,{tokens:[...oldTokens,{token,validUpto:new Date(Date.now() + (5 * 60 * 1000))}]})        
         return res.status(200).send({status:true,msg:"Login successfully",token,refreshJwtToken})
     } catch (error) {
@@ -171,4 +176,4 @@ const generateNewToken =async(req,res)=>{
         return res.status(500).send({error:error.message})
     }
 }
-module.exports ={registerUser,loginUser,forgetPassword,updatePassword,logout,generateNewToken}
+module.exports ={getUserId,registerUser,loginUser,forgetPassword,updatePassword,logout,generateNewToken}
