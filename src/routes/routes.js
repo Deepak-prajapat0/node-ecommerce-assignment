@@ -4,6 +4,7 @@ const productController = require("../controllers/productController");
 const cartController = require("../controllers/cartController");
 const orderController = require("../controllers/orderController");
 const auth = require("../middleware/auth");
+const paymentController = require('../controllers/paymentController')
 
 // user routes
 
@@ -28,12 +29,13 @@ router.put("/cart", auth, cartController.updateCart);
 
 // order route
 router.post("/order", auth, orderController.createOrder);
-router.post("/create-payment-intent", orderController.payment);
+// router.post("/create-payment-intent", orderController.payment);
 router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", auth, orderController.getOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
-router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
 
 
+router.post("/payment",paymentController.payment);
+router.post("/paymentStatus", paymentController.paymentStatus);
 
 module.exports = router;

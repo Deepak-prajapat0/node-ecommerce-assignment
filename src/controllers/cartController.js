@@ -61,7 +61,7 @@ const addToCartFromLocalStorage = async(req,res)=>{
         let {cartItems} = req.body;
         let userCart = await cartModel.findOne({userId}).populate('cartItems.productId');
         if(!userCart){
-            let cartDetails ={ userId,cartItems:cartItems,totalPrice,totalItems}
+            let cartDetails ={ userId,cartItems:cartItems,totalPrice:req.body.totalPrice,totalItems:req.body.totalItems}
             let newCart = await cartModel.create(cartDetails);
             return res.status(201).send({status:true,msg:"Items added to cart",cart:newCart})
         }
