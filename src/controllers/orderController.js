@@ -7,29 +7,64 @@ const ObjectId = require("mongoose").Types.ObjectId
 
 const createOrder = async(req,res)=>{
     try {
-        let userId = req.user._id;
-        let {name,phone,house,street,city,state,pincode} = req.body;
-        const inputError = orderValidation.validate(req.body);
-        if(inputError.error){
-            return res.status(400).send({error:inputError.error.details[0].message});
+        let {userId,cartItems,totalItems,totalPrice,} = req.body.order;
+        let {bname,email,name,phone,house,street,city,state,pincode} = req.body.form;
+        // const inputError = orderValidation.validate(req.body.form);
+        // if(inputError.error){
+        //     return res.status(400).send({error:inputError.error.details[0].message});
+        // }
+
+        if(email.length){
+            const orderDetails = {
+                 name: bname,
+                 email,
+              orderDetails: {
+                totalItems: totalItems,
+                totalPrice: totalPrice,
+                products: cartItems,
+              },
+              shippingDetails: {
+                name,
+                phone,
+                address: {
+                  house,
+                  street,
+                  city,
+                  state,
+                  pincode,
+                },
+              },
+            };
+            let order = await orderModel.create(orderDetails)
+            cartItems.forEach(async (item) => {
+              await productModel.findByIdAndUpdate(
+                item.productId._id,
+                { $inc: { stock: -item.quantity } },
+                { new: true }
+              );
+            });
+            return res.status(201).send({status:true,msg:"Order placed",order})
         }
+        else{
+
+        
         let cart = await cartModel.findOne({userId:userId}).populate("cartItems.productId","stock")
         if(!cart){
             return res.status(404).send({status:false,msg:"User cart not found"});
         }
-        if(cart.cartItems.length <= 0){
+        if(cartItems.length <= 0){
             return res.status(400).send({status:false,msg:"Please add some items in cart to place order"});
         }
-        const filter = cart.cartItems.filter(x=>x.quantity > x.productId.stock)
+        const filter = cartItems.filter(x=>x.quantity > x.productId.stock)
         if(filter.length >0){
             return res.status(400).send({status:false,msg:"some product are out of stock",filter})
         }
         let order = {
           userId,
           orderDetails: {
-            totalItems: cart.totalItems,
-            totalPrice: cart.totalPrice,
-            products: cart.cartItems,
+            totalItems: totalItems,
+            totalPrice: totalPrice,
+            products: cartItems,
           },
           shippingDetails: {
             name,
@@ -44,13 +79,14 @@ const createOrder = async(req,res)=>{
           },
         };
         let userOrder =  await orderModel.create(order)
-        cart.cartItems.forEach(async(item) => {
+        cartItems.forEach(async(item) => {
             await productModel.findByIdAndUpdate(
             item.productId._id,
             {$inc: {stock: -item.quantity}},{new:true})
         })
         await cartModel.findByIdAndUpdate(cart._id,{$set:{cartItems:[],totalItems:0,totalPrice:0}},{new:true})
         return res.status(200).send({status:true,msg:"Order Done",userOrder})
+        }
     } catch (error) {
         return res.status(500).send({error:error.message})
     }

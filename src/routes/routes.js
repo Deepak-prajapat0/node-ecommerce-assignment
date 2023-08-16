@@ -28,7 +28,7 @@ router.put("/cart-local", cartController.addToCartFromLocalStorage);
 router.put("/cart", auth, cartController.updateCart);
 
 // order route
-router.post("/order", auth, orderController.createOrder);
+router.post("/order", orderController.createOrder);
 // router.post("/create-payment-intent", orderController.payment);
 router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", auth, orderController.getOrderById);
@@ -36,6 +36,6 @@ router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
 
 
 router.post("/payment",paymentController.payment);
-router.post("/paymentStatus", paymentController.paymentStatus);
+router.post("/payment-status",paymentController.paymentStatus);
 
 module.exports = router;
