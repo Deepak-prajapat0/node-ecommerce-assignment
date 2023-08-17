@@ -2,7 +2,10 @@ const orderModel = require("../models/orderModel");
 const cartModel = require("../models/cartModel")
 const productModel = require("../models/productModel")
 const orderValidation = require('../validations/orderValidation')
-const ObjectId = require("mongoose").Types.ObjectId
+const mongoose = require('mongoose')
+const validObjectId = function (objectId) {
+  return mongoose.Types.ObjectId.isValid(objectId);
+};
 
 
 const createOrder = async(req,res)=>{
@@ -106,9 +109,25 @@ const getOrderById = async(req,res)=>{
     try {
         let userId = req.user._id;
         let orderId = req.params.orderId;
+  
         let order = await orderModel.findOne({_id:orderId,userId,status:{$in:["pending","delivered"]}}).populate("orderDetails.products.productId");
         if(!order){
             return res.status(404).send({status:false,msg:"You have not completed any order"})
+        }
+        return res.status(200).send({status:true,msg:"Order details",order})
+    } catch (error) {
+        return res.status(500).send({error:error.message})
+    }
+}
+const trackOrderById = async(req,res)=>{
+    try {
+        let orderId = req.params.orderId;
+        if(!validObjectId(orderId)){
+             return res.status(400).send({status:false,msg:"Please enter a valid orderId"})
+        }
+        let order = await orderModel.findOne({_id:orderId}).populate("orderDetails.products.productId");
+        if(!order){
+            return res.status(400).send({status:false,msg:"You have not completed any order"})
         }
         return res.status(200).send({status:true,msg:"Order details",order})
     } catch (error) {
@@ -124,14 +143,16 @@ const cancelProductInOrder = async(req,res)=>{
         if(!orderId){
             return res.status(400).send({status:false,msg:"Please provide orderId"})
         }
-        if (!ObjectId.isValid(orderId)) {
-            return res.status(400).send({status:false,msg:"invlid orderId"})
+        if (!validObjectId(orderId)) {
+          return res.status(400).send({ status: false, msg: "invlid orderId" });
         }
         if(!productId){
             return res.status(400).send({status:false,msg:"Please provide productId"})
         }
-        if (!ObjectId.isValid(productId)) {
-            return res.status(400).send({status:false,msg:"invlid productId"})
+        if (!validObjectId(productId)) {
+          return res
+            .status(400)
+            .send({ status: false, msg: "invlid productId" });
         }
         let userOrder = await orderModel.findById(orderId);
         if(!userOrder){
@@ -209,8 +230,8 @@ const cancelOrder = async(req,res)=>{
         if(!orderId){
             return res.status(400).send({status:false,msg:"Please provide orderId"})
         }
-        if (!ObjectId.isValid(orderId)) {
-            return res.status(400).send({status:false,msg:"invlid orderId"})
+        if (!validObjectId(orderId)) {
+          return res.status(400).send({ status: false, msg: "invlid orderId" });
         }
         let userOrder = await orderModel.findById(orderId);
 
@@ -236,6 +257,7 @@ module.exports = {
   createOrder,
   getOrder,
   getOrderById,
+  trackOrderById,
   cancelProductInOrder,
   cancelOrder,
 };

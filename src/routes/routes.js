@@ -29,10 +29,11 @@ router.put("/cart", auth, cartController.updateCart);
 
 // order route
 router.post("/order", orderController.createOrder);
-// router.post("/create-payment-intent", orderController.payment);
 router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", auth, orderController.getOrderById);
+router.get("/track/:orderId", orderController.trackOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
+router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
 
 
 router.post("/payment",paymentController.payment);

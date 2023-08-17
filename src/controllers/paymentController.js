@@ -69,7 +69,7 @@ const paymentStatus =async(req,res)=>{
                 order.paymentStatus = paymentIntent;
                 await order.save();
             }
-            res.status(200).json(paymentIntent);
+            res.status(200).json({paymentIntent:paymentIntent,orderId:order._id});
         } catch (error) {
             console.log(error);
         }
