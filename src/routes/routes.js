@@ -31,7 +31,7 @@ router.put("/cart", auth, cartController.updateCart);
 router.post("/order", orderController.createOrder);
 router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", auth, orderController.getOrderById);
-router.get("/track/:orderId", orderController.trackOrderById);
+router.get("/track/:orderId/:email", orderController.trackOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
 router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
 
