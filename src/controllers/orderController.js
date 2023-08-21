@@ -106,7 +106,7 @@ const getOrder = async(req,res)=>{
     try {
         let userId = req.user._id;
         // getting orders that are completed and delivered 
-        let order = await orderModel.find({userId,status:{$in:["completed","delivered"]}}).populate("orderDetails.products.productId").sort({"createdAt": -1});
+        let order = await orderModel.find({userId}).populate("orderDetails.products.productId").sort({"createdAt": -1});
         return res.status(200).send({status:true,msg:"User order",order})
     } catch (error) {
         return res.status(500).send({error:error.message})
@@ -119,7 +119,7 @@ const getOrderById = async(req,res)=>{
         let userId = req.user._id;
         let orderId = req.params.orderId;
         // getting orders that are completed and delivered 
-        let order = await orderModel.findOne({_id:orderId,userId,status:{$in:["completed","delivered"]}}).populate("orderDetails.products.productId");
+        let order = await orderModel.findOne({_id:orderId,userId}).populate("orderDetails.products.productId");
         if(!order){
             return res.status(404).send({status:false,msg:"You have not completed any order"})
         }
@@ -195,47 +195,31 @@ const cancelProductInOrder = async(req,res)=>{
                 quantity = x.quantity
             }
         })
-
         // filtering the product that user want to delete or remove
-        const filteredProducts = userOrder.orderDetails.products.filter((x)=>x.productId.valueOf() !== productId)
-
-        if(filteredProducts.length === userOrder.orderDetails.products.length){
-            return res.status(404).send({status:false,msg:"given product not found in your order"})
-        }
-
+        userOrder.orderDetails.products.map((x)=>{
+            if(x.productId.toString() == productId){
+                x.canceled = true
+            }
+        })
         product.stock += quantity
         await product.save();
         const updatedData ={}
-
-        // if no products left after filteration
-        if(filteredProducts.length === 0){
-            updatedData.products=filteredProducts,
-            updatedData.totalItems=userOrder.orderDetails.totalItems-quantity,
-            updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
-            let order = await orderModel.findByIdAndUpdate(
+        updatedData.products = userOrder.orderDetails.products,
+        updatedData.totalItems=userOrder.orderDetails.totalItems-quantity,
+        updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity;
+        console.log(updatedData);
+        if(updatedData.totalPrice === 0){
+              let order = await orderModel.findByIdAndUpdate(
               orderId,
-              { $set: { orderDetails: updatedData, status: "canceled" } },
+              { $set: { orderDetails: updatedData, status: "canceled",canceledOn:new Date().toLocaleString() } },
               { new: true }
             );
-            return res.status(200).send({status:true,msg:"order canceled",order})        
+            return res.status(200).send({status:true,msg:"order updated",order})
         }
-     
         else{
-            updatedData.products=filteredProducts,
-            updatedData.totalItems=userOrder.orderDetails.totalItems-quantity,
-            updatedData.totalPrice=userOrder.orderDetails.totalPrice - product.price*quantity
-             userOrder.orderDetails.products.forEach(async (product) => {
-              let pro = await productModel.findByIdAndUpdate(
-                 product._id,
-                 { $inc: { stock: +product.quantity } },
-                 { new: true }
-               );
-               console.log(pro);
-             });
-            const order = await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData}},{new:true}).populate("orderDetails.products.productId")
-             return res.status(200).send({status:true,msg:"product canceled",order})       
+            let order = await orderModel.findByIdAndUpdate(orderId,{$set:{orderDetails:updatedData}},{new:true}).populate("orderDetails.products.productId")
+            return res.status(200).send({status:true,msg:"order updated",order})
         }
-
     } catch (error) {
         return res.status(500).send({error:error.message})
     }
@@ -267,7 +251,7 @@ const cancelOrder = async(req,res)=>{
         userOrder.orderDetails.products.forEach(async(product)=>{
             await productModel.findByIdAndUpdate(product.productId,{$inc:{stock:+product.quantity}},{new:true})
         })
-        const order = await orderModel.findByIdAndUpdate(orderId,{$set:{status:"canceled"}},{new:true})
+        const order = await orderModel.findByIdAndUpdate(orderId,{$set:{status:"canceled",canceledOn:new Date().toLocaleString()}},{new:true})
         return res.status(200).send({status:true,msg:"order canceled",order})      
     } catch (error) {
         return res.status(500).send({error:error.message})

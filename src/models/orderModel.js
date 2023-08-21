@@ -27,6 +27,10 @@ const orderSchema = new mongoose.Schema(
             trim: true,
           },
           _id: false,
+          canceled:{
+            type:Boolean,
+            default:false
+          }
         },
       ],
       totalItems: {
@@ -94,6 +98,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    canceledOn:Date
   },
   { timestamps: true }
 );

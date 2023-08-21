@@ -48,9 +48,27 @@ const getProductById =async(req,res)=>{
     }
 }
 
+const searchProduct = async (req, res) => {
+  try {
+    const { q } = req.query;
+    console.log(req);
+    const products = await productModel.find({
+      $or: [
+        { title: { $regex: q, $options: "i" } },
+        { brand: { $regex: q, $options: "i" } },
+        { category: { $regex: q, $options: "i" } },
+      ],
+    });
+    return res.json(products);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   addNewProduct,
   getAllProducts,
   getLimitedProducts,
   getProductById,
+  searchProduct,
 };

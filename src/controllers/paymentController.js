@@ -72,12 +72,12 @@ const paymentStatus =async(req,res)=>{
             }
             let order = await orderModel.findOne({ paymentId:c_id});
             if(order){
+              if(order.email){
+                await mailTrackId(order._id, order.name, order.email);
+              }
                 order.paymentStatus = paymentIntent;
                 await order.save();
                 //  order is placed by guest user then it will send a email with tracking id to user
-                if(order.email){
-                  await mailTrackId(order._id, order.name, order.email);
-                }
             }
             res.status(200).json({paymentIntent:paymentIntent,orderId:order._id});
         } catch (error) {

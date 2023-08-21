@@ -27,7 +27,7 @@ const registerUser =async(req,res)=>{
         // encrypting password
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password,salt);
-        // createing user
+        // creating user
         const user = await userModel.create({name,email,password});
 
         // generating token and refreshToken
