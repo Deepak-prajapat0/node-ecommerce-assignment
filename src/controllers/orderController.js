@@ -1,7 +1,7 @@
 const orderModel = require("../models/orderModel");
 const cartModel = require("../models/cartModel")
 const productModel = require("../models/productModel")
-const orderValidation = require('../validations/orderValidation')
+const bcrypt = require('bcrypt')
 const mongoose = require('mongoose');
 const userModel = require("../models/userModel");
 const validObjectId = function (objectId) {
@@ -12,7 +12,7 @@ const validObjectId = function (objectId) {
 const createOrder = async(req,res)=>{
     try {
         let {userId,cartItems,totalItems,totalPrice,} = req.body.order;
-        let {bname,email,name,phone,house,street,city,state,pincode} = req.body.form;
+        let {bname,email,password,name,phone,house,street,city,state,pincode} = req.body.form;
         // if guest checkout
            if(email.length){
             let user = await userModel.findOne({email});
@@ -20,8 +20,6 @@ const createOrder = async(req,res)=>{
                 return res.status(400).send({status:false,msg:"You have an account,Please login "})
             }
             const orderDetails = {
-                 name: bname,
-                 email,
               orderDetails: {
                 totalItems: totalItems,
                 totalPrice: totalPrice,
@@ -39,6 +37,11 @@ const createOrder = async(req,res)=>{
                 },
               },
             };
+            const salt = await bcrypt.genSalt(10);
+            password = await bcrypt.hash(password, salt);
+            // let pendingPayment = await orderModel.findOne({email,orderDetails:orderDetails.orderDetails})
+            let newUser = await userModel.create({name:bname,email,password});
+            orderDetails.userId = newUser._id
             let order = await orderModel.create(orderDetails)
             cartItems.forEach(async (item) => {
               await productModel.findByIdAndUpdate(
@@ -52,6 +55,25 @@ const createOrder = async(req,res)=>{
 
         // if loggedin user place a order
         else{
+                 let order = {
+                   userId,
+                   orderDetails: {
+                     totalItems: totalItems,
+                     totalPrice: totalPrice,
+                     products: cartItems,
+                   },
+                   shippingDetails: {
+                     name,
+                     phone,
+                     address: {
+                       house,
+                       street,
+                       city,
+                       state,
+                       pincode,
+                     },
+                   },
+                 };
         let cart = await cartModel.findOne({userId:userId}).populate("cartItems.productId","stock")
         if(!cart){
             return res.status(404).send({status:false,msg:"User cart not found"});
@@ -65,25 +87,7 @@ const createOrder = async(req,res)=>{
         if(filter.length >0){
             return res.status(400).send({status:false,msg:"some product are out of stock",filter})
         }
-        let order = {
-          userId,
-          orderDetails: {
-            totalItems: totalItems,
-            totalPrice: totalPrice,
-            products: cartItems,
-          },
-          shippingDetails: {
-            name,
-            phone,
-            address: {
-              house,
-              street,
-              city,
-              state,
-              pincode,
-            },
-          },
-        };
+   
         //  creating user order
         let userOrder =  await orderModel.create(order)
 

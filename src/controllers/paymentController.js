@@ -1,4 +1,5 @@
 const orderModel = require("../models/orderModel");
+const productModel = require("../models/productModel");
 const mailTrackId = require("../utils/mailTrackId");
 
 const stripe = require("stripe")("sk_test_51NdRM1SGor658vyKhU4S6rmJ3uwQ65oFrPHmpnCXZCDM8MAdcUA1ELMxHmnSA5j5dBYdsnOlkubMxTAAvqagiaLK00E4koTCFJ");
@@ -70,16 +71,28 @@ const paymentStatus =async(req,res)=>{
             else{
                 paymentIntent = 'payment_failed'
             }
+            // finding order with payment Id
             let order = await orderModel.findOne({ paymentId:c_id});
             if(order){
               if(order.email){
                 await mailTrackId(order._id, order.name, order.email);
               }
+              // if payment failed then update the stock of product
+              if(paymentIntent === 'payment_failed'){
+                 order.orderDetails.products.forEach(async (item) => {
+                   await productModel.findByIdAndUpdate(
+                     item.productId._id,
+                     { $inc: { stock: +item.quantity } },
+                     { new: true }
+                   );
+                 });
+              }
                 order.paymentStatus = paymentIntent;
                 await order.save();
                 //  order is placed by guest user then it will send a email with tracking id to user
             }
-            res.status(200).json({paymentIntent:paymentIntent,orderId:order._id});
+            console.log(order);
+            return res.status(200).json({paymentIntent:paymentIntent,orderId:order._id});
         } catch (error) {
             console.log(error);
         }
