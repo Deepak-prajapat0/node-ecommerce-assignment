@@ -1,7 +1,9 @@
 const nodemailer = require("nodemailer");
+const fs = require("fs");
+const htmlFile = fs.readFileSync('src/template.html', 'utf-8');
 
-const mailTrackId = async (id, name, email) => {
-  console.log(process.env.EMAIL_HOST);
+
+const mailTrackId = async (id, name, email,order) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -17,9 +19,7 @@ const mailTrackId = async (id, name, email) => {
       from: `'Deepak' <process.env.EMAIL_USER>`,
       to: email,
       subject: "Thank you for ordering.",
-      html: `<h2>Hlo ${name} </h2>
-                      <h3>Here is your tracking Id</h3>
-                      <h3>${id}</h3>`,
+      html: htmlFile,
     });
     if (success) {
       return success;

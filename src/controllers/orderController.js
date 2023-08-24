@@ -9,6 +9,12 @@ const validObjectId = function (objectId) {
 };
 
 
+let userIdFromLocal;
+// for creating a cart of user whose localstorage data will be store in cart
+const getUserId = () => {
+  return userIdFromLocal;
+};
+
 const createOrder = async(req,res)=>{
     try {
         let {userId,cartItems,totalItems,totalPrice,} = req.body.order;
@@ -41,6 +47,7 @@ const createOrder = async(req,res)=>{
             password = await bcrypt.hash(password, salt);
             // let pendingPayment = await orderModel.findOne({email,orderDetails:orderDetails.orderDetails})
             let newUser = await userModel.create({name:bname,email,password});
+            userIdFromLocal=newUser._id
             orderDetails.userId = newUser._id
             let order = await orderModel.create(orderDetails)
             cartItems.forEach(async (item) => {
@@ -90,8 +97,7 @@ const createOrder = async(req,res)=>{
    
         //  creating user order
         let userOrder =  await orderModel.create(order)
-
-        // decreasing product stock after order place
+            // decreasing product stock after order place
         cartItems.forEach(async(item) => {
             await productModel.findByIdAndUpdate(
             item.productId._id,

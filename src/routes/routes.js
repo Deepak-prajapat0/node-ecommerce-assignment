@@ -5,6 +5,7 @@ const cartController = require("../controllers/cartController");
 const orderController = require("../controllers/orderController");
 const auth = require("../middleware/auth");
 const paymentController = require('../controllers/paymentController')
+const wishlistController = require('../controllers/wishlistController')
 
 // user routes
 
@@ -36,8 +37,14 @@ router.get("/track/:orderId/:email", orderController.trackOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
 router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
 
-
+// payment routes
 router.post("/payment",paymentController.payment);
 router.post("/payment-status",paymentController.paymentStatus);
+
+// wishlist routes
+router.post("/wishlist",auth, wishlistController.addToWishlist);
+router.get("/wishlist",auth, wishlistController.getWithlist);
+router.put("/wishlist",auth, wishlistController.removeFromWishlist);
+
 
 module.exports = router;

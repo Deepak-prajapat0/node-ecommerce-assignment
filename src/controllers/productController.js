@@ -51,7 +51,6 @@ const getProductById =async(req,res)=>{
 const searchProduct = async (req, res) => {
   try {
     const { q } = req.query;
-    console.log(req);
     const products = await productModel.find({
       $or: [
         { title: { $regex: q, $options: "i" } },
