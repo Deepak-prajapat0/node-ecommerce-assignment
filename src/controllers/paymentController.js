@@ -70,7 +70,7 @@ const paymentStatus =async(req,res)=>{
                 paymentIntent = 'payment_failed'
             }
             // finding order with payment Id
-            let order = await orderModel.findOne({ paymentId: c_id }).populate("orderDetails.products.productId");
+            let order = await orderModel.findOne({ paymentId: c_id }).populate(["orderDetails.products.productId",'userId']);
             if(order){
               // if(order.email){
               //   await mailTrackId(order._id, order.name, order.email);
@@ -86,7 +86,8 @@ const paymentStatus =async(req,res)=>{
                  });
               }
               else{
-                 orderDetail = order;
+                 orderDetail =  order;
+                  await mailTrackId(order.userId.email,order)
               }
                 order.paymentStatus = paymentIntent;
                 await order.save();

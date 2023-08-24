@@ -1,4 +1,4 @@
-body {
+/* body {
   padding: 1rem;
   margin: 2rem;
   height: 100vh;
@@ -8,9 +8,6 @@ body {
   background-color: white;
   display: flex;
   flex-direction: column;
-}
-.headings{
-    /* color: rgb(176, 170, 170); */
 }
 .orderDetails{
     width: 100%;
@@ -24,3 +21,23 @@ body {
     flex-direction: column;
     gap: 5px;
 }
+
+
+.products >div{
+    padding: 5px 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid lightgray;
+}
+.products img{
+    height: 5rem;
+    width: 6rem;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+}
+
+.products h3, .products h6{
+        font-size: 14px;
+} */
