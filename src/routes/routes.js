@@ -32,8 +32,7 @@ router.put("/cart", auth, cartController.updateCart);
 // order route
 router.post("/order", orderController.createOrder);
 router.get("/order", auth, orderController.getOrder);
-router.get("/order/:orderId", auth, orderController.getOrderById);
-router.get("/track/:orderId/:email", orderController.trackOrderById);
+router.get("/order/:orderId", orderController.getOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
 router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
 

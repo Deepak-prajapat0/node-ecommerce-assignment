@@ -126,31 +126,11 @@ const getOrder = async(req,res)=>{
 // get order by orderId present in params
 const getOrderById = async(req,res)=>{
     try {
-        let userId = req.user._id;
         let orderId = req.params.orderId;
         // getting orders that are completed and delivered 
-        let order = await orderModel.findOne({_id:orderId,userId}).populate("orderDetails.products.productId");
+        let order = await orderModel.findOne({_id:orderId}).populate("orderDetails.products.productId");
         if(!order){
             return res.status(404).send({status:false,msg:"You have not completed any order"})
-        }
-        return res.status(200).send({status:true,msg:"Order details",order})
-    } catch (error) {
-        return res.status(500).send({error:error.message})
-    }
-}
-
-//  getting order by orderId for guest users
-const trackOrderById = async(req,res)=>{
-    try {
-        let orderId = req.params.orderId;
-        let email = req.params.email;
-        if(!validObjectId(orderId)){
-             return res.status(400).send({status:false,msg:"Please enter a valid orderId"})
-        }
-        let order = await orderModel.findOne({_id:orderId,email}).populate("orderDetails.products.productId");
-        //  if order not found with orderId or order doesn't have email in it.
-        if(!order || !order.email){
-            return res.status(400).send({status:false,msg:"we didn't find your order, Please login to track order"})
         }
         return res.status(200).send({status:true,msg:"Order details",order})
     } catch (error) {
@@ -272,7 +252,6 @@ module.exports = {
   createOrder,
   getOrder,
   getOrderById,
-  trackOrderById,
   cancelProductInOrder,
   cancelOrder,
 };

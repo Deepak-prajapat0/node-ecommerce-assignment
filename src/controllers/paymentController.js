@@ -87,8 +87,8 @@ const paymentStatus =async(req,res)=>{
               }
               else{
                  orderDetail =  order;
-                  await mailTrackId(order.userId.email,order)
-              }
+                 await mailTrackId(order.userId.email,order)
+                }
                 order.paymentStatus = paymentIntent;
                 await order.save();
                 //  order is placed by guest user then it will send a email with tracking id to user
