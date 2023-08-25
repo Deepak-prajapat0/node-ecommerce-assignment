@@ -2,7 +2,7 @@ const { default: mongoose } = require("mongoose");
 const productModel = require("../models/productModel");
 const objectId = mongoose.Types.ObjectId
 
-
+// adding a new product
 const addNewProduct =async(req,res)=>{
     try {
         let data = req.body;
@@ -13,6 +13,8 @@ const addNewProduct =async(req,res)=>{
         return res.status(500).send({status:false,msg:error.message})
     }
 }
+
+// get all product
 const getAllProducts =async(req,res)=>{
     try {
         let products = await productModel.find();
@@ -22,6 +24,8 @@ const getAllProducts =async(req,res)=>{
         return res.status(500).send({status:false,msg:error.message})
     }
 }
+
+//  get limited products
 const getLimitedProducts =async(req,res)=>{
     try {
         let products = await productModel.find().limit(18);
@@ -31,6 +35,8 @@ const getLimitedProducts =async(req,res)=>{
         return res.status(500).send({status:false,msg:error.message})
     }
 }
+
+// get product by productId
 const getProductById =async(req,res)=>{
     try {
         let title = req.params.title
@@ -42,9 +48,26 @@ const getProductById =async(req,res)=>{
     }
 }
 
+const searchProduct = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const products = await productModel.find({
+      $or: [
+        { title: { $regex: q, $options: "i" } },
+        { brand: { $regex: q, $options: "i" } },
+        { category: { $regex: q, $options: "i" } },
+      ],
+    });
+    return res.json(products);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   addNewProduct,
   getAllProducts,
   getLimitedProducts,
   getProductById,
+  searchProduct,
 };

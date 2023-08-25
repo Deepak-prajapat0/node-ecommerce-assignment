@@ -5,16 +5,18 @@ const otpSender = require("../utils/nodemailer");
 const crypto =  require("crypto");
 const {jwtToken,refreshToken,verifyRefreshToken} = require("../utils/token");
 
-let userIdFromLocal;
+let userIdFromLocal;   
+// for creating a cart of user whose localstorage data will be store in cart
 const getUserId=()=>{
     return userIdFromLocal;
 }
 
-
+//  registering a user
 const registerUser =async(req,res)=>{
     try {
         let {name,email,password} = req.body;
         const inputError = signupValidation.validate({name,email,password});
+        // validation user input
         if(inputError.error){
             return res.status(400).send({msg:inputError.error.details[0].message});
         }
@@ -22,9 +24,10 @@ const registerUser =async(req,res)=>{
         if(existingUser){
             return res.status(409).send({status:false,msg:"User already exist"});
         }
+        // encrypting password
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password,salt);
-        // createing user
+        // creating user
         const user = await userModel.create({name,email,password});
 
         // generating token and refreshToken
@@ -41,9 +44,11 @@ const registerUser =async(req,res)=>{
     }
 }
 
+//  user login
 const loginUser = async(req,res)=>{
     try {
         let {email,password}= req.body;
+        // validation user input
         const inputError = loginValidation.validate({email,password});
         if(inputError.error){
             return res.status(400).send({msg:inputError.error.details[0].message});
@@ -52,6 +57,7 @@ const loginUser = async(req,res)=>{
         if(!user){
             return res.status(404).send({status:false,msg:"User not found with this email"})
         }
+        // checking the password
         let decyptPass = await bcrypt.compare(password,user.password)
         if(!decyptPass){
             return res.status(401).send({status:false,msg:"Invalid password"})
@@ -75,6 +81,7 @@ const loginUser = async(req,res)=>{
 
 }
 
+//  forgot password
 const forgetPassword = async(req,res)=>{
     try {
         let email = req.body.email;
@@ -109,6 +116,7 @@ const forgetPassword = async(req,res)=>{
     }
 }
 
+//   update password
 const updatePassword = async(req,res)=>{
     try {
         let emailToken = req.params.emailToken;
@@ -145,6 +153,7 @@ const updatePassword = async(req,res)=>{
     }
 }
 
+// logout user and removing its token from db
 const logout = async(req,res)=>{
     try {
         const userId = req.user._id;
@@ -159,6 +168,7 @@ const logout = async(req,res)=>{
     }
 }
 
+// generating a new refresh token
 const generateNewToken =async(req,res)=>{
     try {
         let refreshTokenInBody = req.body.refreshToken;

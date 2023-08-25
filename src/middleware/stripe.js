@@ -6,7 +6,7 @@ const stripe = require("stripe")(
 );
 
 const calculateOrderAmount = (items) => {
-  return 1400;
+  return 1400 *100;
 };
 
 app.post("/create-payment-intent", async (req, res) => {
@@ -16,9 +16,7 @@ app.post("/create-payment-intent", async (req, res) => {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: calculateOrderAmount(items),
     currency: "inr",
-    automatic_payment_methods: {
-      enabled: true,
-    },
+    payment_methods_types: ['card','gpay',"ideal"]
   });
 
   res.send({
