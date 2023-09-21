@@ -14,7 +14,8 @@ const getUserId=()=>{
 //  registering a user
 const registerUser =async(req,res)=>{
     try {
-        let {name,email,password} = req.body;
+        let {name,phone,email,password} = req.body;
+        console.log(req.body);
         const inputError = signupValidation.validate({name,email,password});
         // validation user input
         if(inputError.error){
@@ -73,8 +74,8 @@ const loginUser = async(req,res)=>{
             oldTokens= oldTokens.filter(t=> t.validUpto > new Date())
         }
         userIdFromLocal = user._id;
-        await userModel.findByIdAndUpdate(user._id,{tokens:[...oldTokens,{token,validUpto:new Date(Date.now() + (5 * 60 * 1000))}]})        
-        return res.status(200).send({status:true,msg:"Login successfully",token,refreshJwtToken})
+        const userDetails = await userModel.findByIdAndUpdate(user._id,{tokens:[...oldTokens,{token,validUpto:new Date(Date.now() + (5 * 60 * 1000))}]})        
+        return res.status(200).send({status:true,msg:"Login successfully",user:userDetails,token,refreshJwtToken})
     } catch (error) {
         return res.status(500).send({error:error.message})
     }
@@ -85,24 +86,25 @@ const loginUser = async(req,res)=>{
 const forgetPassword = async(req,res)=>{
     try {
         let email = req.body.email;
+        let emailToken = req.body.emailToken;
         if(!email){
             return res.status(400).send({status:false,msg:"Enter your registerd email"})
         }
-        if(email.length<10){
+        if(email && email.length<10){
             return res.status(400).send({status:false,msg:"Enter valid email"})
         }
         let user = await userModel.findOne({email:email});
         if(!user){
             return res.status(400).send({status:false,msg:"User not found with this email"})
         }
-        const emailToken = crypto.randomBytes(15).toString('hex');
+       
         // sending token on email
-        let emailSendWithToken =  await otpSender(emailToken,user.name,email)
+        let emailSendWithToken =  await otpSender(emailToken,email)
         if(!emailSendWithToken){
             return res.status(400).send({status:false,msg:"something wrong please try later"})
         }
         user.emailToken = emailToken
-        user.emailTokenExp = new Date(Date.now() + (5 * 60 * 1000))
+        user.emailTokenExp = new Date(Date.now() + ( 60 * 1000))
         user.save();
         return res
           .status(200)
@@ -120,9 +122,13 @@ const forgetPassword = async(req,res)=>{
 const updatePassword = async(req,res)=>{
     try {
         let emailToken = req.params.emailToken;
+        console.log(emailToken)
         let {password,confirmPassword} = req.body;
-        if(!emailToken){
-            return res.status(400).send({status:false,msg:"Enter token to update password"})
+        if(!password || !confirmPassword){
+            return res.status(400).send({status:false,msg:"Password should have a minimum length of 6"})
+        }
+        if(password !== confirmPassword){
+            return res.status(400).send({status:false,msg:"password and confirmPassword are not matched"})
         }
         //token validation
         let userEmailToken = await userModel.findOne({emailToken:emailToken});
@@ -132,12 +138,6 @@ const updatePassword = async(req,res)=>{
         // check if link is expired or not
         if(userEmailToken.emailTokenExp < new Date()){
             return res.status(401).send({status:false,msg:"link is expired ,Please create a new one"})
-        }
-        if(!password){
-            return res.status(400).send({status:false,msg:"Password should have a minimum length of 6"})
-        }
-        if(password !== confirmPassword){
-            return res.status(400).send({status:false,msg:"password and confirmPassword are not matched"})
         }
 
         // hashing password

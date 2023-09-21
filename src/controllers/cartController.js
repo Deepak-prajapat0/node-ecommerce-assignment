@@ -8,6 +8,7 @@ const addToCart = async (req, res) => {
   try {
     let productId = req.body.id;
     let userId = req.user._id;
+        console.log(req.body);
     let validProduct = await productModel.findById(productId);
     if (!validProduct) {
       return res
@@ -26,7 +27,7 @@ const addToCart = async (req, res) => {
       let cartDetails = {
         userId,
         cartItems: items,
-        totalPrice: validProduct.price,
+        totalPrice: validProduct.price.cost,
         totalItems: 1,
       };
       let newCart = await cartModel.create(cartDetails);
@@ -44,7 +45,7 @@ const addToCart = async (req, res) => {
       if (cartItemIndex >= 0) {
         let product = userCart.cartItems[cartItemIndex];
         product.quantity += 1;
-        userCart.totalPrice += validProduct.price;
+        userCart.totalPrice += validProduct.price.cost;
         userCart.totalItems += 1;
         let updatedCart = await cartModel.findByIdAndUpdate(
           userCart._id,
@@ -61,7 +62,7 @@ const addToCart = async (req, res) => {
         cart.cartItems = userCart.cartItems;
         cart.cartItems.push({ productId, quantity: 1 });
         cart.totalItems = userCart.totalItems + 1;
-        cart.totalPrice = userCart.totalPrice + validProduct.price;
+        cart.totalPrice = userCart.totalPrice + validProduct.price.cost;
         let updatedCart = await cartModel.findByIdAndUpdate(
           userCart._id,
           cart,

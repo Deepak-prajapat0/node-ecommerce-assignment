@@ -248,10 +248,6 @@ const cancelOrder = async(req,res)=>{
     }
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> stripe
 module.exports = {
   createOrder,
   getOrder,

@@ -16,7 +16,7 @@ app.use("/",routes);
 
 mongoose
   .connect(
-    "mongodb+srv://deepakprajapat:ggev3skeK6tIIJhE@cluster0.7bnz8zu.mongodb.net/angular-ecommerce"
+    process.env.DB_URL
   )
   .then(() => {
     console.log("DB connected");
@@ -26,7 +26,9 @@ mongoose
   });
 
 let port = process.env.PORT || 3001;
-app.listen(port, () => {
+ const server =app.listen(port, () => {
   console.log(`app running on port ${port}`);
 });
 // 1687525428248
+
+module.exports = server
