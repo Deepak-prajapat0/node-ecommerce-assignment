@@ -19,14 +19,14 @@ mongoose
     process.env.DB_URL
   )
   .then(() => {
-    console.log("DB connected");
   })
   .catch((error) => {
     throw new Error(error.message);
   });
 
 let port = process.env.PORT || 3001;
- const server =app.listen(port, () => {
+
+let server = app.listen(port, () => {
   console.log(`app running on port ${port}`);
 });
 // 1687525428248

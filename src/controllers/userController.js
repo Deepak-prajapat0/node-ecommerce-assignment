@@ -15,7 +15,6 @@ const getUserId=()=>{
 const registerUser =async(req,res)=>{
     try {
         let {name,phone,email,password} = req.body;
-        console.log(req.body);
         const inputError = signupValidation.validate({name,email,password});
         // validation user input
         if(inputError.error){
@@ -122,7 +121,6 @@ const forgetPassword = async(req,res)=>{
 const updatePassword = async(req,res)=>{
     try {
         let emailToken = req.params.emailToken;
-        console.log(emailToken)
         let {password,confirmPassword} = req.body;
         if(!password || !confirmPassword){
             return res.status(400).send({status:false,msg:"Password should have a minimum length of 6"})

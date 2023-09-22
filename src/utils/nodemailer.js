@@ -1,7 +1,6 @@
 const nodemailer = require("nodemailer")
 
 const otpSender =async(token,name, email)=> {
-  console.log(process.env.EMAIL_HOST);
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
