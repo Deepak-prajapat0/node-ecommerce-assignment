@@ -72,9 +72,6 @@ const paymentStatus =async(req,res)=>{
             // finding order with payment Id
             let order = await orderModel.findOne({ paymentId: c_id }).populate(["orderDetails.products.productId",'userId']);
             if(order){
-              // if(order.email){
-              //   await mailTrackId(order._id, order.name, order.email);
-              // }
               // if payment failed then update the stock of product
               if(paymentIntent === 'payment_failed'){
                  order.orderDetails.products.forEach(async (item) => {

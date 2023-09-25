@@ -6,6 +6,9 @@ const addToWishlist=async(req,res)=>{
     try {
         let productId = req.body.productId;
         let userId = req.user._id;
+        if(!productId){
+            return res.status(400).send({status:false,msg:"Invalid request body"})
+        }
         let product = await productModel.findById(productId);
         if(!product){
             return res.status(404).send({status:false,msg:"Invalid productId"})
@@ -29,7 +32,7 @@ const addToWishlist=async(req,res)=>{
              }
             products.push(productId)
             let wishlist = await wishlistModel.findByIdAndUpdate(userWishlist._id,{$set:{products:products}},{new:true}).populate('products')
-            return res.status(201).send({status:true,msg:"Added to wishlist",wishlist})
+            return res.status(200).send({status:true,msg:"Added to wishlist",wishlist})
 
         }
     } catch (error) {
@@ -54,6 +57,9 @@ const removeFromWishlist=async(req,res)=>{
     try {
         let userId = req.user._id;
         let productId = req.body.productId
+        if(!productId){
+            return res.status(400).send({status:false,msg:"Please provied productId"})
+        }
         let userWishlist = await wishlistModel.findOne({userId:userId});
         let filteredList = userWishlist.products.filter((x) => x.toString() !== productId.toString());
         console.log(filteredList);

@@ -30,7 +30,7 @@ router.put("/cart-local", cartController.addToCartFromLocalStorage);
 router.put("/cart", auth, cartController.updateCart);
 
 // order route
-router.post("/order", orderController.createOrder);
+router.post("/order",auth, orderController.createOrder);
 router.get("/order", auth, orderController.getOrder);
 router.get("/order/:orderId", orderController.getOrderById);
 router.put("/order/:orderId", auth, orderController.cancelProductInOrder);

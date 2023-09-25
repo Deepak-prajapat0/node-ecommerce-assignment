@@ -181,6 +181,21 @@ describe('User apis', () => {
         })
       )
     })
+    it('should return 200 when password updated', async () => {
+      const response = await request(app)
+        .put(`/updatepassword/${emailToken}`)
+        .send({
+          password: '123456',
+          confirmPassword: '123456'
+        })
+      expect(response.status).toBe(401)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          msg: 'link expired,create a new link',
+          status: false
+        })
+      )
+    })
   })
 
   // logout user ----------------------------------

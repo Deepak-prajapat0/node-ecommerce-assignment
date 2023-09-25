@@ -2,7 +2,6 @@ const nodemailer = require("nodemailer");
 
 // order summery on email
 const mailTrackId = async (email, order) => {
-  console.log(email);
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",

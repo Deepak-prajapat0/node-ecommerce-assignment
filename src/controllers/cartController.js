@@ -2,80 +2,98 @@ const cartModel = require('../models/cartModel')
 const productModel = require('../models/productModel')
 const { getUserId } = require('./userController')
 
-//  api to add product in cart
+//  add product in cart --------------------
+
 const addToCart = async (req, res) => {
   try {
-    let productId = req.body.id
-    let userId = req.user._id
+    // productId from body
+    let productId = req.body.id;
+
+    // userId from auth middleware
+    let userId = req.user._id;
+
+    // no productId provided
     if (!productId) {
-      return res.status(400).send({ status: false, msg: 'productId not given' })
+      return res.status(400).send({ status: false, msg: 'productId not given' });
     }
-    let validProduct = await productModel.findById(productId)
+    let validProduct = await productModel.findById(productId);
+
+    // no product found with productId
     if (!validProduct) {
       return res
         .status(404)
-        .send({ status: false, msg: 'product not found with given id' })
+        .send({ status: false, msg: 'product not found with given id' });
     }
+
+    // if product is out of stock
     if (validProduct.stock === 0) {
       return res
         .status(400)
-        .send({ status: false, msg: 'item is not currenty available' })
+        .send({ status: false, msg: 'item is not currenty available' });
     }
-    let userCart = await cartModel.findOne({ userId: userId })
+
+    // checking if user has Cart
+    let userCart = await cartModel.findOne({ userId: userId });
     //  if user has no cart
     if (!userCart) {
-      let items = [{ productId, quantity: 1 }]
+      let items = [{ productId, quantity: 1 }];
       let cartDetails = {
         userId,
         cartItems: items,
         totalPrice: validProduct.price.cost,
         totalItems: 1
-      }
-      let newCart = await cartModel.create(cartDetails)
+      };
+
+      // creating user cart
+      let newCart = await cartModel.create(cartDetails);
       return res
         .status(201)
-        .send({ status: true, msg: 'Items added to cart', cart: newCart })
+        .send({ status: true, msg: 'Items added to cart', cart: newCart });
     }
     //  if user has cart
     else {
       let cartItemIndex = userCart.cartItems.findIndex(
         x => x.productId == productId
-      )
+      );
 
       // if user added same product in cart
       if (cartItemIndex >= 0) {
-        let product = userCart.cartItems[cartItemIndex]
-        product.quantity += 1
-        userCart.totalPrice += validProduct.price.cost
-        userCart.totalItems += 1
+        let product = userCart.cartItems[cartItemIndex];
+        product.quantity += 1;
+        userCart.totalPrice += validProduct.price.cost;
+        userCart.totalItems += 1;
+
+        // updating user cart
         let updatedCart = await cartModel.findByIdAndUpdate(
           userCart._id,
           userCart,
           { new: true }
-        )
+        );
         return res
           .status(200)
-          .send({ status: true, msg: 'Item added to cart', cart: updatedCart })
+          .send({ status: true, msg: 'Item added to cart', cart: updatedCart });
       }
       // if user added different product in cart
       else {
-        let cart = {}
-        cart.cartItems = userCart.cartItems
-        cart.cartItems.push({ productId, quantity: 1 })
-        cart.totalItems = userCart.totalItems + 1
-        cart.totalPrice = userCart.totalPrice + validProduct.price.cost
+        let cart = {};
+        cart.cartItems = userCart.cartItems;
+        cart.cartItems.push({ productId, quantity: 1 });
+        cart.totalItems = userCart.totalItems + 1;
+        cart.totalPrice = userCart.totalPrice + validProduct.price.cost;
+        // updating user cart
+
         let updatedCart = await cartModel.findByIdAndUpdate(
           userCart._id,
           cart,
           { new: true }
-        )
+        );
         return res
           .status(200)
-          .send({ status: true, msg: 'Item added to cart', cart: updatedCart })
+          .send({ status: true, msg: 'Item added to cart', cart: updatedCart });
       }
     }
   } catch (error) {
-    return res.status(500).send({ status: false, error: error.message })
+    return res.status(500).send({ status: false, error: error.message });
   }
 }
 
@@ -153,59 +171,73 @@ const addToCartFromLocalStorage = async (req, res) => {
 // getting user cart
 const getUserCart = async (req, res) => {
   try {
-    let userId = req.user._id
+    // userId from auth middleware
+    let userId = req.user._id;
+    // find userCart with userId in cartModel
     const cart = await cartModel
       .findOne({ userId })
-      .populate('cartItems.productId')
-    return res.status(200).send({ status: true, msg: 'User cart', cart: cart })
+      .populate('cartItems.productId');
+
+    return res.status(200).send({ status: true, msg: 'User cart', cart: cart });
   } catch (error) {
-    return res.status(500).send({ status: false, error: error.message })
+    return res.status(500).send({ status: false, error: error.message });
   }
 }
 
 // update user cart with userId , productId and quantity
 const updateCart = async (req, res) => {
   try {
-    let userId = req.user._id
+    // userId from auth middleware
+    let userId = req.user._id;
+
     if (Object.keys(req.body).length !== 2) {
-      return res.status(400).send({ status: false, msg: 'invlid request' })
+      return res.status(400).send({ status: false, msg: 'invlid request' });
     }
-    let { productId, quantity } = req.body
+
+    let { productId, quantity } = req.body;   // product Id and quantity from request body;
+
+    // productId not provided
     if (!productId) {
       return res
         .status(400)
-        .send({ status: false, msg: 'please provide productId' })
+        .send({ status: false, msg: 'please provide productId' });
     }
-    let product = await productModel.findById(productId)
+
+    //  check if product is exist with given productId
+    let product = await productModel.findById(productId);
     if (!product) {
       return res
         .status(404)
-        .send({ status: false, msg: 'product not found with given Id' })
+        .send({ status: false, msg: 'product not found with given Id' });
     }
+
+    // if quantity is greater than product stock
     if (quantity > product.stock) {
       return res.status(404).send({
         status: false,
         msg: `maximum quantiy to buy is ${product.stock}`
-      })
+      });
     }
 
     // finding user cart
-    let userCart = await cartModel.findOne({ userId })
+    let userCart = await cartModel.findOne({ userId });
 
     // checking if product is already present in cart
-    let item = userCart.cartItems.findIndex(item => item.productId == productId)
+    let item = userCart.cartItems.findIndex(item => item.productId == productId);
     if (item === -1) {
       return res
         .status(404)
-        .send({ status: false, msg: 'This product not found in your cart' })
+        .send({ status: false, msg: 'This product not found in your cart' });
     }
-    let updatedCart = {}
-    const cartItem = userCart.cartItems[item]
+
+    //  object to update the cart
+    let updatedCart = {};
+    const cartItem = userCart.cartItems[item];
 
     // if user provide 0 quantity or want to delete the product from cart
     if (quantity < 1) {
-      let totalItems = userCart.totalItems - cartItem.quantity
-      let totalPrice = userCart.totalPrice - cartItem.quantity * product.price
+      let totalItems = userCart.totalItems - cartItem.quantity;
+      let totalPrice = userCart.totalPrice - cartItem.quantity * product.price;
       let cart = await cartModel
         .findByIdAndUpdate(
           userCart._id,
@@ -215,44 +247,44 @@ const updateCart = async (req, res) => {
           },
           { new: true }
         )
-        .populate('cartItems.productId')
+        .populate('cartItems.productId');
       return res
         .status(200)
-        .send({ status: true, msg: 'Item removed from cart', cart: cart })
+        .send({ status: true, msg: 'Item removed from cart', cart: cart });
     }
     // if user decrease the product qauntity
     else if (quantity < cartItem.quantity) {
-      updatedCart.cartItems = userCart.cartItems
-      updatedCart.totalItems = userCart.totalItems - 1
+      updatedCart.cartItems = userCart.cartItems;
+      updatedCart.totalItems = userCart.totalItems - 1;
       updatedCart.totalPrice =
         userCart.totalPrice +
-        (quantity * product.price - cartItem.quantity * product.price)
-      cartItem.quantity = quantity
+        (quantity * product.price - cartItem.quantity * product.price);
+      cartItem.quantity = quantity;
       let cart = await cartModel
         .findByIdAndUpdate(userCart._id, updatedCart, { new: true })
-        .populate('cartItems.productId')
+        .populate('cartItems.productId');
       return res
         .status(200)
-        .send({ status: true, msg: 'cart updated', cart: cart })
+        .send({ status: true, msg: 'cart updated', cart: cart });
     }
 
     //  if user increase the product quantity
     else {
-      updatedCart.cartItems = userCart.cartItems
-      updatedCart.totalItems = userCart.totalItems + 1
+      updatedCart.cartItems = userCart.cartItems;
+      updatedCart.totalItems = userCart.totalItems + 1;
       updatedCart.totalPrice =
         userCart.totalPrice +
-        (quantity * product.price - cartItem.quantity * product.price)
-      cartItem.quantity = quantity
+        (quantity * product.price - cartItem.quantity * product.price);
+      cartItem.quantity = quantity;
       let cart = await cartModel
         .findByIdAndUpdate(userCart._id, updatedCart, { new: true })
-        .populate('cartItems.productId')
+        .populate('cartItems.productId');
       return res
         .status(200)
-        .send({ status: true, msg: 'cart updated', cart: cart })
+        .send({ status: true, msg: 'cart updated', cart: cart });
     }
   } catch (error) {
-    return res.status(500).send({ status: false, error: error.message })
+    return res.status(500).send({ status: false, error: error.message });
   }
 }
 module.exports = {
