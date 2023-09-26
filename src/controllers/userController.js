@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
     // checking if email is already registerd
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
-      return res.status(409).send({ status: false, msg: 'User already exist' })
+      return res.status(409).send({ status: false, msg: 'User already exist with this email' })
     }
     // encrypting password
     const salt = await bcrypt.genSalt(10)
@@ -44,7 +44,7 @@ const registerUser = async (req, res) => {
     userIdFromLocal = user._id
 
     // sending token in headers
-    res.header('x-api-key', token)
+    res.header('Authorization', `Bearer ${token}`)
     return res
       .status(201)
       .send({ status: true, msg: 'Account created successfully', user, token })
@@ -79,7 +79,7 @@ const loginUser = async (req, res) => {
     const token = jwtToken(user._id)
     const refreshJwtToken = refreshToken(user._id)
     // sending token in headers
-    res.header('x-api-key', token)
+    res.header('Authorization', `Bearer ${token}`)
 
     // getting all tokens of user
     let oldTokens = user.tokens || []
@@ -101,7 +101,7 @@ const loginUser = async (req, res) => {
       .send({
         status: true,
         msg: 'Login successfully',
-        user: userDetails,
+        user: userDetails.email,
         token,
         refreshJwtToken
       })
@@ -114,7 +114,7 @@ const loginUser = async (req, res) => {
 const forgetPassword = async (req, res) => {
   try {
     // taking the email from body
-  let {email,emailToken} = req.body
+  let {email} = req.body
 
 //   if user not enter any email
     if (!email) {
@@ -135,6 +135,7 @@ const forgetPassword = async (req, res) => {
     }
 
     // sending token on email
+    const emailToken = crypto.randomBytes(15).toString('hex')
     let emailSendWithToken = await otpSender(emailToken, email)
     if (!emailSendWithToken) {
       return res
@@ -147,7 +148,8 @@ const forgetPassword = async (req, res) => {
     user.save()
     return res.status(200).send({
       status: true,
-      msg: `If an account exists for ${email} , you will get an link to resetting your password. `
+      msg: `If an account exists for ${email} , you will get an link to resetting your password. `,
+      emailToken
     })
   } catch (error) {
     return res.status(500).send({ error: error.message })

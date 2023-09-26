@@ -3,7 +3,7 @@ const crypto = require('crypto')
 const server = require('../index')
 
 let token = ''
-let emailToken = crypto.randomBytes(15).toString('hex')
+let emailToken = ''
 let app
 beforeEach(async () => {
   server.close()
@@ -110,10 +110,10 @@ describe('User apis', () => {
       }),
       it('should return 200 if password reset mail sent to user', async () => {
         const response = await request(app).post('/forgetpassword').send({
-          emailToken: emailToken,
           email: 'jk4497@gmail.com'
         })
         expect(response.status).toBe(200)
+        emailToken = response.body.emailToken
       })
   })
 

@@ -3,10 +3,11 @@ const userModel = require("../models/userModel")
 
 const auth = async(req,res,next)=>{
     try {
-        let token  = req.headers["x-api-key"];
+        let token = req.headers["Authorization"] || req.headers['authorization'];
         if (!token){
             return res.status(401).send({ status: false, msg: "Token is not present" })
         }
+        token = token.split(' ')[1]
         let decodedToken = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
         let user = await userModel.findById(decodedToken._id);
         if(!user){

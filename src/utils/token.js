@@ -5,7 +5,7 @@ const jwtToken = (id)=>{
 }
 
 const refreshToken =(id)=>{
- return jwt.sign({_id:id},process.env.JWT_PRIVATE_KEY,{expiresIn:"60m"})
+    return jwt.sign({ _id: id }, process.env.JWT_PRIVATE_REFRESH_KEY,{expiresIn:"60m"})
 } 
 
 const verifyRefreshToken =(token)=>{
@@ -13,7 +13,7 @@ const verifyRefreshToken =(token)=>{
         if(!token){
             return false
         }
-        let decodedRefreshToken= jwt.verify(token,process.env.JWT_PRIVATE_KEY)        
+        let decodedRefreshToken = jwt.verify(token, process.env.JWT_PRIVATE_REFRESH_KEY)        
         return decodedRefreshToken
     } catch (error) {
         return false

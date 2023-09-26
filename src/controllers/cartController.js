@@ -7,7 +7,7 @@ const { getUserId } = require('./userController')
 const addToCart = async (req, res) => {
   try {
     // productId from body
-    let productId = req.body.id;
+    let productId = req.body.productId;
 
     // userId from auth middleware
     let userId = req.user._id;
@@ -48,7 +48,7 @@ const addToCart = async (req, res) => {
       let newCart = await cartModel.create(cartDetails);
       return res
         .status(201)
-        .send({ status: true, msg: 'Items added to cart', cart: newCart });
+        .send({ status: true, msg: 'Item added to cart', cart: newCart });
     }
     //  if user has cart
     else {
