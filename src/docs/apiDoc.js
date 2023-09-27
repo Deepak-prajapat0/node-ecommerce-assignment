@@ -2,6 +2,7 @@ const { registerUser, registerUserBody, loginUser, loginUserBody, forgotPassword
 const { createCart, createCartBody,getUserCart ,updateUserCart,updateCartBody} = require('./cartDoc');
 const {createOrder,createOrderBody, getUserOrder, getOrderWithId,cancelProductBody,cancelProductInOrder, cancelOrder}= require('./orderDoc')
 const{getAllProducts,getProductById,getSearchedProduct} = require('./productDoc')
+const { createWishlist, getWishlist, updateWishlist }= require('./wishlistDoc')
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -84,6 +85,14 @@ const swaggerDefinition = {
     },
     "/order/cancel/{orderId}":{
       put:cancelOrder
+    },
+
+    // wishlist api route
+
+    '/wishlist':{
+      post:createWishlist,
+      get:getWishlist,
+      put: updateWishlist,
     }
   },
   components: {

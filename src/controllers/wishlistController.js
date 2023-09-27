@@ -20,7 +20,7 @@ const addToWishlist=async(req,res)=>{
         let userWishlist = await wishlistModel.findOne({userId});
         if(!userWishlist){
             let wishlist = await wishlistModel.create({userId,products:[productId]})
-            return res.status(201).send({status:true,msg:"Added to wishlist",wishlist})
+            return res.status(200).send({status:true,msg:"Added to wishlist",wishlist})
         }
         else{
             let products = userWishlist.products
@@ -62,7 +62,6 @@ const removeFromWishlist=async(req,res)=>{
         }
         let userWishlist = await wishlistModel.findOne({userId:userId});
         let filteredList = userWishlist.products.filter((x) => x.toString() !== productId.toString());
-        console.log(filteredList);
         let wishlist = await wishlistModel.findByIdAndUpdate(userWishlist._id,{$set:{products:filteredList}},{new:true}).populate("products")
         return res.status(200).send({status:true,wishlist})
     } catch (error) {
@@ -70,15 +69,6 @@ const removeFromWishlist=async(req,res)=>{
         
     }
 }
-// const getWithlist=async(req,res)=>{
-//     try {
-//         let userId = req.user._id;
-//         let wishlist = await wishlistModel.findOne({userId:userId}).populate("products");
-//         return res.status(200).send({status:false,wishlist})
-//     } catch (error) {
-//         return res.status(500).send({ status: false, msg: error.message });
-        
-//     }
-// }
+
 
 module.exports = { addToWishlist, getWithlist, removeFromWishlist };
