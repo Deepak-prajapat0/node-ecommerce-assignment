@@ -23,7 +23,7 @@ const orderValidation = Joi.object().keys({
       house: Joi.string()
       .required()
       .min(2)
-      .max(15)
+      .max(30)
       .messages({
         "string.base": `Only characters are allowed`,
         "string.empty": `House cannot be an empty `,
@@ -33,7 +33,7 @@ const orderValidation = Joi.object().keys({
       street: Joi.string()
       .required()
       .min(1)
-      .max(15)
+      .max(30)
       .messages({
         "string.base": `Only characters are allowed`,
         "string.empty": `street cannot be an empty `,
@@ -62,7 +62,7 @@ const orderValidation = Joi.object().keys({
       }),
       pincode: Joi.number()
       .required()
-      .min(111111)
+      .min(99999)
       .max(999999)
       .messages({
         "string.base": `Only numbers are allowed`,
