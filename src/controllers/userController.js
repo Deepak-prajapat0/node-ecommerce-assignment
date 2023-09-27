@@ -136,12 +136,13 @@ const forgetPassword = async (req, res) => {
 
     // sending token on email
     const emailToken = crypto.randomBytes(15).toString('hex')
-    let emailSendWithToken = await otpSender(emailToken, email)
+    let emailSendWithToken = await otpSender(emailToken,user.name, email)
     if (!emailSendWithToken) {
       return res
         .status(400)
         .send({ status: false, msg: 'something wrong please try later' })
     }
+    console.log(emailSendWithToken)
     user.emailToken = emailToken
     user.emailTokenExp = new Date(Date.now() + 60 * 1000)
     // updating user's emailToken and emailTokenExpiry and saving the user
