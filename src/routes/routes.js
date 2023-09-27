@@ -20,7 +20,7 @@ router.post("/refresh-token", userController.generateNewToken);
 router.post("/product", productController.addNewProduct);
 router.get("/products/search", productController.searchProduct);
 router.get("/products", productController.getAllProducts);
-router.get("/products/:title", productController.getProductById);
+router.get("/products/:id", productController.getProductById);
 router.get("/best-products", productController.getLimitedProducts);
 
 // cart route

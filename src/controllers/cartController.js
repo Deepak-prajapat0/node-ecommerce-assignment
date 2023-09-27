@@ -237,7 +237,7 @@ const updateCart = async (req, res) => {
     // if user provide 0 quantity or want to delete the product from cart
     if (quantity < 1) {
       let totalItems = userCart.totalItems - cartItem.quantity;
-      let totalPrice = userCart.totalPrice - cartItem.quantity * product.price;
+      let totalPrice = userCart.totalPrice - cartItem.quantity * product.price.cost;
       let cart = await cartModel
         .findByIdAndUpdate(
           userCart._id,
@@ -255,13 +255,21 @@ const updateCart = async (req, res) => {
     // if user decrease the product qauntity
     else if (quantity < cartItem.quantity) {
       updatedCart.cartItems = userCart.cartItems;
-      updatedCart.totalItems = userCart.totalItems - 1;
+      updatedCart.totalItems = userCart.totalItems - (cartItem.quantity-quantity);
       updatedCart.totalPrice =
         userCart.totalPrice +
-        (quantity * product.price - cartItem.quantity * product.price);
+        (quantity * product.price.cost - cartItem.quantity * product.price.cost);
       cartItem.quantity = quantity;
       let cart = await cartModel
         .findByIdAndUpdate(userCart._id, updatedCart, { new: true })
+        .populate('cartItems.productId');
+      return res
+        .status(200)
+        .send({ status: true, msg: 'cart updated', cart: cart });
+    }
+    else if(quantity === cartItem.quantity){
+      let cart = await cartModel
+        .findById(userCart._id)
         .populate('cartItems.productId');
       return res
         .status(200)
@@ -271,10 +279,10 @@ const updateCart = async (req, res) => {
     //  if user increase the product quantity
     else {
       updatedCart.cartItems = userCart.cartItems;
-      updatedCart.totalItems = userCart.totalItems + 1;
+      updatedCart.totalItems = (userCart.totalItems-cartItem.quantity) + quantity;
       updatedCart.totalPrice =
         userCart.totalPrice +
-        (quantity * product.price - cartItem.quantity * product.price);
+        (quantity * product.price.cost - cartItem.quantity * product.price.cost);
       cartItem.quantity = quantity;
       let cart = await cartModel
         .findByIdAndUpdate(userCart._id, updatedCart, { new: true })

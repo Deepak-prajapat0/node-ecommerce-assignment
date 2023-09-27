@@ -388,7 +388,7 @@ const logOut = {
     operationId: 'LogoutUser',
     security: [
         {
-            bearerAuth: [],
+            ApiKeyAuth: [],
         },
     ],
     responses: {

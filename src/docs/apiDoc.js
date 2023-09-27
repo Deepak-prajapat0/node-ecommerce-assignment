@@ -1,5 +1,7 @@
 const { registerUser, registerUserBody, loginUser, loginUserBody, forgotPassword, forgotPasswordBody, updatePassword, updatePasswordBody, logOut } = require('./userDoc')
-const { createCart, createCartBody, getUserCart } = require('./cartDoc')
+const { createCart, createCartBody,getUserCart ,updateUserCart,updateCartBody} = require('./cartDoc');
+const {createOrder,createOrderBody, getUserOrder, getOrderWithId,cancelProductBody,cancelProductInOrder, cancelOrder}= require('./orderDoc')
+const{getAllProducts,getProductById,getSearchedProduct} = require('./productDoc')
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -23,11 +25,14 @@ const swaggerDefinition = {
       description: 'Development server',
     },
     {
-      url: 'http://localhost:3001',
-      description: 'Development server',
+      url: 'https://react-ecommerce-api-bwv0.onrender.com',
+      description: 'Live server',
     },
   ],
   paths: {
+
+    // user api routes 
+
     '/register': {
       post: registerUser,
     },
@@ -44,21 +49,49 @@ const swaggerDefinition = {
       post: logOut,
     },
 
-    // cart api's
+    // product api route
+
+    '/products':{
+      get:getAllProducts
+    },
+    '/best-products':{
+      get:getAllProducts
+    },
+    '/products/{id}':{
+      get: getProductById
+    },
+    '/products/search':{
+      get: getSearchedProduct
+    },
+
+    // cart api route
 
     '/cart': {
       post: createCart,
-    },
-    '/cart': {
       get: getUserCart,
+      put: updateUserCart
     },
+
+    // order api route 
+
+    '/order': {
+      post: createOrder,
+      get: getUserOrder,
+    },
+    "/order/{orderId}":{
+      get:getOrderWithId,
+      put:cancelProductInOrder
+    },
+    "/order/cancel/{orderId}":{
+      put:cancelOrder
+    }
   },
   components: {
     securitySchemes: {
-      bearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
+      ApiKeyAuth: {
+        type: "apiKey",
+        in: "header",
+        name: "X-API-KEY",
       },
     },
     schemas: {
@@ -66,7 +99,10 @@ const swaggerDefinition = {
       loginUserBody,
       forgotPasswordBody,
       updatePasswordBody,
-      createCartBody
+      createCartBody,
+      updateCartBody,
+      createOrderBody,
+      cancelProductBody
     },
   },
 };

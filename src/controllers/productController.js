@@ -39,8 +39,11 @@ const getLimitedProducts =async(req,res)=>{
 // get product by productId
 const getProductById =async(req,res)=>{
     try {
-        let title = req.params.title
-        let product = await productModel.findOne({title});
+        let productId = req.params.id
+      let product = await productModel.findById(productId);
+        if(!product){
+          return res.status(404).send({status:false,msg:"Product not found with given id"})
+        }
         return res.status(200).send({status:true,product})
         
     } catch (error) {
@@ -58,7 +61,8 @@ const searchProduct = async (req, res) => {
         { category: { $regex: q, $options: "i" } },
       ],
     });
-    return res.json(products);
+    console.log(q,products)
+    return res.status(200).send({status:true,products})
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }

@@ -16,7 +16,7 @@ const createOrder = async (req, res) => {
     const userId = req.user._id
     let { name, phone, house, street, city, state, pincode } = req.body
     if(Object.keys(req.body).length !== 7){
-        return res.status(400).send({status:false,msg:"invalid data"})
+        return res.status(400).send({status:false,msg:"invalid form body"})
     }
     // validating input with joi validation
       const formError = orderValidation.validate(req.body)
@@ -202,22 +202,22 @@ const cancelProductInOrder = async (req, res) => {
     // updating the quantity of product in productModel
     product.stock += quantity
     await product.save()
+    console.log(product.price,quantity)
     const updatedData = {};
     updatedData.products = userOrder.orderDetails.products,
     updatedData.totalItems = userOrder.orderDetails.totalItems - quantity,
     updatedData.totalPrice =
-        userOrder.orderDetails.totalPrice - product.price * quantity
-
+       (userOrder.orderDetails.totalPrice - product.price.cost * quantity)
         // when all products are canceled in given order then set status to canceled
-    if (updatedData.totalPrice === 0) {
-      let order = await orderModel.findByIdAndUpdate(
-        orderId,
-        {
-          $set: {
-            orderDetails: updatedData,
-            status: 'canceled',
-            canceledOn: new Date().toLocaleString()
-          }
+        if (updatedData.totalPrice === 0) {
+          let order = await orderModel.findByIdAndUpdate(
+            orderId,
+            {
+              $set: {
+                orderDetails: updatedData,
+                status: 'canceled',
+                canceledOn: new Date().toLocaleString()
+              }
         },
         { new: true }
       );
@@ -227,6 +227,7 @@ const cancelProductInOrder = async (req, res) => {
 
       // when order has some product that are not canceled
     } else {
+          console.log(updatedData)
       let order = await orderModel
         .findByIdAndUpdate(
           orderId,

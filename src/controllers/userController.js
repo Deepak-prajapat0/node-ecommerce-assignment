@@ -44,7 +44,7 @@ const registerUser = async (req, res) => {
     userIdFromLocal = user._id
 
     // sending token in headers
-    res.header('Authorization', `Bearer ${token}`)
+    res.header('x-api-key', token)
     return res
       .status(201)
       .send({ status: true, msg: 'Account created successfully', user, token })
@@ -79,7 +79,7 @@ const loginUser = async (req, res) => {
     const token = jwtToken(user._id)
     const refreshJwtToken = refreshToken(user._id)
     // sending token in headers
-    res.header('Authorization', `Bearer ${token}`)
+    res.header('x-api-key', token)
 
     // getting all tokens of user
     let oldTokens = user.tokens || []
