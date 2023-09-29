@@ -80,7 +80,11 @@ const loginUser = async (req, res) => {
     const refreshJwtToken = refreshToken(user._id)
     // sending token in headers
     res.header('x-api-key', token)
-
+    res.cookie('jwt', token, {
+      httpOnly: false, // Prevent JavaScript access
+      maxAge: 3600000, // Cookie expiration in milliseconds (1 hour)
+      // Add other cookie options as needed (secure, sameSite, domain, etc.)
+    });
     // getting all tokens of user
     let oldTokens = user.tokens || []
     if (oldTokens.length) {
@@ -96,6 +100,7 @@ const loginUser = async (req, res) => {
         { token, validUpto: new Date(Date.now() + 5 * 60 * 1000) }
       ]
     })
+    
     return res
       .status(200)
       .send({

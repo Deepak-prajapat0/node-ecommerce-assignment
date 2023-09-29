@@ -5,11 +5,13 @@ const cors = require('cors')
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const {swaggerDefinition} = require('./docs/apiDoc')
+const cookieParser = require('cookie-parser');
 const app = express();
 
 require("dotenv").config({ path: "config.env" });
 
 app.use(express.json());
+app.use(cookieParser())
 app.use(cors({origin: "*"}));
 app.use("/",routes);
 

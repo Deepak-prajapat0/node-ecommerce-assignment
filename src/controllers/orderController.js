@@ -3,6 +3,7 @@ const cartModel = require('../models/cartModel')
 const productModel = require('../models/productModel')
 const mongoose = require('mongoose')
 const orderValidation = require('../validations/orderValidation')
+const userModel = require('../models/userModel')
 const validObjectId = function (objectId) {
   return mongoose.Types.ObjectId.isValid(objectId)
 }
@@ -71,6 +72,7 @@ const createOrder = async (req, res) => {
 
     //  creating user order
     let userOrder = await orderModel.create(order)
+      // await userModel.findByIdAndUpdate(userId)
     // decreasing product stock after order place
     cartItems.forEach(async item => {
       await productModel.findByIdAndUpdate(
@@ -174,7 +176,7 @@ const cancelProductInOrder = async (req, res) => {
         .send({ status: false, msg: 'Order cannot be updated' })
     }
 
-    // checking if product is present 
+    // checking if product is correct 
     let product = await productModel.findById(productId)
     if (!product) {
       return res.status(404).send({ status: false, msg: 'productId invalid' })
@@ -189,7 +191,7 @@ const cancelProductInOrder = async (req, res) => {
     // get quantity of removed product
     let quantity = 0
     userOrder.orderDetails.products.map(x => {
-      if (x.productId.valueOf() === productId) {
+      if (x.productId.valueOf() === productId && x.canceled === false) {
         quantity = x.quantity
       }
     })

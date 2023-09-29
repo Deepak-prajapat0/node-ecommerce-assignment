@@ -59,6 +59,11 @@ const addToCart = async (req, res) => {
       // if user added same product in cart
       if (cartItemIndex >= 0) {
         let product = userCart.cartItems[cartItemIndex];
+        if(product.quantity >= 10){
+          return res
+            .status(200)
+            .send({ status: true, msg: 'Maximum quantity to buy is 10', cart:userCart });
+        }
         product.quantity += 1;
         userCart.totalPrice += validProduct.price.cost;
         userCart.totalItems += 1;
@@ -254,6 +259,7 @@ const updateCart = async (req, res) => {
     }
     // if user decrease the product qauntity
     else if (quantity < cartItem.quantity) {
+      console.log(quantity)
       updatedCart.cartItems = userCart.cartItems;
       updatedCart.totalItems = userCart.totalItems - (cartItem.quantity-quantity);
       updatedCart.totalPrice =
@@ -268,12 +274,9 @@ const updateCart = async (req, res) => {
         .send({ status: true, msg: 'cart updated', cart: cart });
     }
     else if(quantity === cartItem.quantity){
-      let cart = await cartModel
-        .findById(userCart._id)
-        .populate('cartItems.productId');
       return res
         .status(200)
-        .send({ status: true, msg: 'cart updated', cart: cart });
+        .send({ status: true, msg: 'cart updated', cart: userCart });
     }
 
     //  if user increase the product quantity

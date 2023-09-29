@@ -16,6 +16,7 @@ const getUserOrder = () => {
 const payment =async(req,res,next)=>{
         try {
             let cart = req.body.cart;
+            console.log(req.body)
             // creating card session and send it to user
           let session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -25,15 +26,15 @@ const payment =async(req,res,next)=>{
                 currency: "INR",
                 product_data: {
                   name: item.productId.title,
-                  images: item.productId.images,
+                  images: item.productId.image_url,
                 },
-                unit_amount: item.productId.price * 100,
+                unit_amount: item.productId.price.cost * 100,
               },
               quantity: item.quantity,
             })),
             mode: "payment",
-            success_url: `${process.env.HOST_URL}/success`,
-            cancel_url: `${process.env.HOST_URL}/failed`,
+            success_url: `${process.env.HOST_URL}/`,
+            cancel_url: `${process.env.HOST_URL}/`,
           });
           
           //  if order is placed by guest user then find it by email
