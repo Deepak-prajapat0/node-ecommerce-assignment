@@ -61,7 +61,6 @@ const searchProduct = async (req, res) => {
         { category: { $regex: q, $options: "i" } },
       ],
     });
-    console.log(q,products)
     return res.status(200).send({status:true,products})
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });

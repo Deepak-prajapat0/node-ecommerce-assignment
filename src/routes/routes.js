@@ -32,13 +32,13 @@ router.put("/cart", auth, cartController.updateCart);
 // order route
 router.post("/order",auth, orderController.createOrder);
 router.get("/order", auth, orderController.getOrder);
-router.get("/order/:orderId", orderController.getOrderById);
-router.put("/order/:orderId", auth, orderController.cancelProductInOrder);
-router.put("/order/cancel/:orderId", auth, orderController.cancelOrder);
+router.get("/order/:id", orderController.getOrderById);
+router.put("/order/:id", auth, orderController.cancelProductInOrder);
+router.put("/order/cancel/:id", auth, orderController.cancelOrder);
 
 // payment routes
-router.post("/payment",paymentController.payment);
-router.post("/payment-status",paymentController.paymentStatus);
+router.post("/payment",auth,paymentController.payment);
+router.post("/payment-status",auth,paymentController.paymentStatus);
 
 // wishlist routes
 router.post("/wishlist",auth, wishlistController.addToWishlist);

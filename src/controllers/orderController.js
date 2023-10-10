@@ -113,7 +113,7 @@ const getOrder = async (req, res) => {
 // get order by orderId present in params
 const getOrderById = async (req, res) => {
   try {
-    let orderId = req.params.orderId
+    let orderId = req.params.id
     if(!validObjectId(orderId)){
         return res.status(400).send({status:false,msg:"invalid orderId"})
     }
@@ -138,7 +138,7 @@ const getOrderById = async (req, res) => {
 const cancelProductInOrder = async (req, res) => {
   try {
     let { productId } = req.body      // productId from body
-    let orderId = req.params.orderId  // orderId from params
+    let orderId = req.params.id  // order id from params
     let userId = req.user._id         // userId from auth middleware
   
     //  orderId  is not a valid ObjectId
@@ -204,7 +204,7 @@ const cancelProductInOrder = async (req, res) => {
     // updating the quantity of product in productModel
     product.stock += quantity
     await product.save()
-    console.log(product.price,quantity)
+    
     const updatedData = {};
     updatedData.products = userOrder.orderDetails.products,
     updatedData.totalItems = userOrder.orderDetails.totalItems - quantity,
@@ -229,7 +229,7 @@ const cancelProductInOrder = async (req, res) => {
 
       // when order has some product that are not canceled
     } else {
-          console.log(updatedData)
+          
       let order = await orderModel
         .findByIdAndUpdate(
           orderId,
@@ -247,7 +247,7 @@ const cancelProductInOrder = async (req, res) => {
 const cancelOrder = async (req, res) => {
   try {
     // orderId of order from param 
-    let orderId = req.params.orderId;
+    let orderId = req.params.id;
 
     // userId from auth middleware
     let userId = req.user._id;

@@ -67,7 +67,7 @@ const mailTrackId = async (email, order) => {
             <td>${index + 1}</td>
             <td>${item.productId.title}</td>
             <td>${item.quantity}</td>
-            <td style="text-align:end;">&#8377; ${item.productId.price}</td>
+            <td style="text-align:end;">&#8377; ${item.productId.price.cost}</td>
           </tr> `;
             })
             .join("")}
@@ -91,11 +91,9 @@ const mailTrackId = async (email, order) => {
     `,
     });
     if (success) {
-      console.log(success);
       return success;
     }
   } catch (error) {
-    console.log(error);
     return error;
   }
 };

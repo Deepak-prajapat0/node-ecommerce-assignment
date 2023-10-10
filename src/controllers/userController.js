@@ -47,7 +47,7 @@ const registerUser = async (req, res) => {
     res.header('x-api-key', token)
     return res
       .status(201)
-      .send({ status: true, msg: 'Account created successfully', user, token })
+      .send({ status: true, msg: 'Account created successfully', user, token,refreshJwtToken })
   } catch (error) {
     return res.status(500).send({ error: error.message })
   }
@@ -80,11 +80,6 @@ const loginUser = async (req, res) => {
     const refreshJwtToken = refreshToken(user._id)
     // sending token in headers
     res.header('x-api-key', token)
-    res.cookie('jwt', token, {
-      httpOnly: false, // Prevent JavaScript access
-      maxAge: 3600000, // Cookie expiration in milliseconds (1 hour)
-      // Add other cookie options as needed (secure, sameSite, domain, etc.)
-    });
     // getting all tokens of user
     let oldTokens = user.tokens || []
     if (oldTokens.length) {
@@ -147,7 +142,6 @@ const forgetPassword = async (req, res) => {
         .status(400)
         .send({ status: false, msg: 'something wrong please try later' })
     }
-    console.log(emailSendWithToken)
     user.emailToken = emailToken
     user.emailTokenExp = new Date(Date.now() + 60 * 1000)
     // updating user's emailToken and emailTokenExpiry and saving the user

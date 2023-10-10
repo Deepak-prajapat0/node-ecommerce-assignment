@@ -16,7 +16,6 @@ const getUserOrder = () => {
 const payment =async(req,res,next)=>{
         try {
             let cart = req.body.cart;
-            console.log(req.body)
             // creating card session and send it to user
           let session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -33,19 +32,19 @@ const payment =async(req,res,next)=>{
               quantity: item.quantity,
             })),
             mode: "payment",
-            success_url: `${process.env.HOST_URL}/`,
-            cancel_url: `${process.env.HOST_URL}/`,
+            success_url: `${process.env.HOST_URL}/payment/success`,
+            cancel_url: `${process.env.HOST_URL}/payment/failed`,
           });
           
           //  if order is placed by guest user then find it by email
-          
-              let order = await orderModel.findOne({
-                userId: cart.userId || getUserId(),
+          // console.log(session)
+              let order = await orderModel.find({
+                userId: cart.userId,
                 paymentStatus: "payment_pending",
-              });
-              if (order) {
-                order.paymentId = session.id;
-                await order.save();
+              }).sort({ createdAt: -1 }).limit(1);
+              if (order[0]) {
+                order[0].paymentId = session.id;
+                await order[0].save();
               }
           
           // sending session to user
@@ -91,7 +90,7 @@ const paymentStatus =async(req,res)=>{
                 await order.save();
                 //  order is placed by guest user then it will send a email with tracking id to user
             }
-            return res.status(200).json({paymentIntent:paymentIntent,order:order});
+            return res.status(200).send({status:true,msg:'Payment success'})
         } catch (error) {
             console.log(error);
         }

@@ -259,7 +259,6 @@ const updateCart = async (req, res) => {
     }
     // if user decrease the product qauntity
     else if (quantity < cartItem.quantity) {
-      console.log(quantity)
       updatedCart.cartItems = userCart.cartItems;
       updatedCart.totalItems = userCart.totalItems - (cartItem.quantity-quantity);
       updatedCart.totalPrice =
